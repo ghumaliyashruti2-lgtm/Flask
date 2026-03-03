@@ -4,6 +4,7 @@ from . import db
 from flask_login import login_user, logout_user, login_required
 from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_login import current_user
 
 main = Blueprint("main", __name__)
 
@@ -14,7 +15,7 @@ def home():
     posts = Post.query.all()
 
     return render_template("index.html", posts=posts)
-
+'''
 # add blog detail 
 @main.route("/add", methods=["GET","POST"])
 @login_required
@@ -62,7 +63,7 @@ def edit_post(id):
 
         return redirect("/")
 
-    return render_template("edit_post.html", post=post)
+    return render_template("edit_post.html", post=post)'''
 
 # Register
 
@@ -78,6 +79,7 @@ def register():
         if existing_user:
             return "Username already exists"
         
+        # store password in has formate
         hashed_password = generate_password_hash(password)
         new_user = User(username=username, password=hashed_password)
 
@@ -118,3 +120,62 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("main.login"))
+
+
+@main.route("/add", methods=["GET","POST"])
+@login_required
+def add_post():
+
+    if request.method == "POST":
+
+        title = request.form["title"]
+        content = request.form["content"]
+
+        new_post = Post(
+            title=title,
+            content=content,
+            author=current_user
+        )
+
+        db.session.add(new_post)
+        db.session.commit()
+
+        return redirect("/")
+
+    return render_template("add_post.html")
+
+@main.route("/edit/<int:id>", methods=["GET","POST"])
+@login_required
+def edit_post(id):
+
+    post = Post.query.get_or_404(id)
+
+    # 🚨 IMPORTANT CHECK
+    if post.author != current_user:
+        return "You are not allowed to edit this post!"
+
+    if request.method == "POST":
+
+        post.title = request.form["title"]
+        post.content = request.form["content"]
+
+        db.session.commit()
+
+        return redirect("/")
+
+    return render_template("edit_post.html", post=post)
+
+@main.route("/delete/<int:id>")
+@login_required
+def delete_post(id):
+
+    post = Post.query.get_or_404(id)
+
+    # 🚨 IMPORTANT CHECK
+    if post.author != current_user:
+        return "You are not allowed to delete this post!"
+
+    db.session.delete(post)
+    db.session.commit()
+
+    return redirect("/")
