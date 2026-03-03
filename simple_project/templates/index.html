@@ -1,0 +1,33 @@
+<!-- <h1>Welcome to Flask</h1>
+<p>This is my first Flask website.</p>
+
+
+<form method="POST">
+<input name="username">
+<button type="submit">Submit</button>
+</form>
+-->
+
+<h1>Todo App</h1>
+
+<form action="/add" method="POST">
+
+<input name="task" placeholder="Enter name or else ">
+
+<button>Add Task</button>
+
+</form>
+
+<hr>
+
+{% for task in tasks %}
+
+<p>
+
+{{task[1]}}
+
+<a href="/delete/{{task[0]}}">Delete</a>
+
+</p>
+
+{% endfor %}

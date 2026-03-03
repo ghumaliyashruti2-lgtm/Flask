@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for post in posts %}
+
+<h3>{{post.title}}</h3>
+<p>{{post.content}}</p>
+
+<a href="/edit/{{post.id}}">Edit</a>
+<a href="/delete/{{post.id}}">Delete</a>
+
+<hr>
+
+{% endfor %}
+
+{% endblock %}

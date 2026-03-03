@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mini Blog</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<h1>Mini Blog</h1>
+
+<a href="/">Home</a>
+<a href="/add">Add Post</a>
+
+<hr>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>
