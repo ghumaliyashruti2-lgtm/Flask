@@ -7,10 +7,44 @@
 <h3>{{post.title}}</h3>
 <p>{{post.content}}</p>
 
-<a href="/edit/{{post.id}}">Edit</a>
-<a href="/delete/{{post.id}}">Delete</a>
+<!-- its allow edit and delete only own post -->
+{% if post.author == current_user %} 
+    <a href="{{ url_for('main.edit_post', id=post.id) }}">Edit</a>
+    <a href="{{ url_for('main.delete_post', id=post.id) }}">Delete</a>
+{% endif %}
 
+<h4>Comments</h4>
+
+{% for comment in post.comments %}
+    <p>
+        <b>{{ comment.author.username }}</b> :
+        {{ comment.text }}
+        {% if comment.author == current_user %}
+            <a href="{{ url_for('main.edit_comment', id=comment.id) }}">Edit</a>
+            <a href="{{ url_for('main.delete_comment', id=comment.id) }}">Delete</a>
+        {% endif %}
+    </p>
+{% endfor %}
 <hr>
+
+<form action="{{ url_for('main.add_comment', post_id=post.id) }}" method="POST">
+
+    <input type="text" name="comment" placeholder="Write comment..." required>
+
+    <button type="submit">Comment</button>
+
+</form>
+
+
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">
+          {{ message }}
+      </div>
+  {% endfor %}
+{% endwith %}
+      
 
 {% endfor %}
 

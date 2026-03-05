@@ -1,20 +1,25 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from .models import Post
+from .models import Post , Comment
 from . import db
 from flask_login import login_user, logout_user, login_required
 from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user
+from flask import flash
 
 main = Blueprint("main", __name__)
 
 # show blog detail 
+
 @main.route("/")
+@login_required
 def home():
-
+    # this show all user post its used when user have comment in post .
     posts = Post.query.all()
-
+    '''# this show only user own post 
+    posts = Post.query.filter_by(author=current_user).all()'''
     return render_template("index.html", posts=posts)
+
 '''
 # add blog detail 
 @main.route("/add", methods=["GET","POST"])
@@ -109,7 +114,7 @@ def login():
             return redirect(url_for("main.home"))
 
         else:
-            return "Invalid username or password"
+            flash("Invalid username or password", "danger")
 
     return render_template("login.html")
 
@@ -121,7 +126,7 @@ def logout():
     logout_user()
     return redirect(url_for("main.login"))
 
-
+# add own post 
 @main.route("/add", methods=["GET","POST"])
 @login_required
 def add_post():
@@ -144,6 +149,7 @@ def add_post():
 
     return render_template("add_post.html")
 
+# edit own post 
 @main.route("/edit/<int:id>", methods=["GET","POST"])
 @login_required
 def edit_post(id):
@@ -165,6 +171,7 @@ def edit_post(id):
 
     return render_template("edit_post.html", post=post)
 
+# delete own post 
 @main.route("/delete/<int:id>")
 @login_required
 def delete_post(id):
@@ -179,3 +186,65 @@ def delete_post(id):
     db.session.commit()
 
     return redirect("/")
+
+# profile 
+@main.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html")
+
+# add and show comment 
+@main.route("/comment/<int:post_id>", methods=["POST"])
+@login_required
+def add_comment(post_id):
+
+    text = request.form["comment"]
+
+    new_comment = Comment(
+        text=text,
+        user_id=current_user.id,
+        post_id=post_id
+    )
+
+    db.session.add(new_comment)
+    db.session.commit()
+
+    return redirect("/")
+
+# delete comment 
+
+@main.route("/delete-comment/<int:id>")
+@login_required
+def delete_comment(id):
+
+    comment = Comment.query.get_or_404(id)
+
+    # Only comment owner can delete
+    if comment.author != current_user:
+        return "You cannot delete this comment"
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    return redirect("/")
+
+# edit own comment post 
+@main.route("/edit-comment/<int:id>", methods=["GET","POST"])
+@login_required
+def edit_comment(id):
+
+    comment = Comment.query.get_or_404(id)
+
+    # 🚨 IMPORTANT CHECK
+    if comment.author != current_user:
+        return "You are not allowed to edit this comment!"
+
+    if request.method == "POST":
+
+        comment.content = request.form["content"]
+
+        db.session.commit()
+
+        return redirect("/")
+
+    return render_template("edit_comment.html", comment=comment)

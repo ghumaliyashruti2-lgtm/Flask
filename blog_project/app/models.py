@@ -19,7 +19,8 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(150))
 
     posts = db.relationship("Post", backref="author", lazy=True)
-    # backref="author" means its connection between post and user bakcref is used for automatic reverse connection post->user and user->post access.
+    comment = db.relationship("Comment", backref="author", lazy=True)
+     # backref="author" means its connection between post and user bakcref is used for automatic reverse connection post->user and user->post access.
     
 class Post(db.Model):
 
@@ -28,3 +29,17 @@ class Post(db.Model):
     content = db.Column(db.Text)
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    comments = db.relationship("Comment", backref="post", cascade="all, delete")
+    
+    
+# comment 
+
+class Comment(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    text = db.Column(db.Text, nullable=False)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+    post_id = db.Column(db.Integer, db.ForeignKey("post.id"))    
