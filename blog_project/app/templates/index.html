@@ -7,6 +7,13 @@
 <h3>{{post.title}}</h3>
 <p>{{post.content}}</p>
 
+<!-- like dislike -->
+❤️ {{ post.likes|length }} Likes
+
+<a href="{{ url_for('main.like_post', post_id=post.id) }}">
+    Like / Unlike
+</a>
+
 <!-- its allow edit and delete only own post -->
 {% if post.author == current_user %} 
     <a href="{{ url_for('main.edit_post', id=post.id) }}" style="text-decoration : none; color: blue; ">Edit</a>
@@ -19,9 +26,9 @@
     <p>
         <b>
             <a href="{{ url_for('main.user_profile', username=comment.author.username) }}" style="text-decoration : none; color : rgb(215,197,100) ;">
-                {{ comment.author.username }}
+                {{ comment.author.username }} :
             </a>
-        </b> :
+        </b>
         {{ comment.text }}
         {% if comment.author == current_user %}
             <a href="{{ url_for('main.edit_comment', id=comment.id) }}" style="text-decoration : none; color: blue; ">Edit</a>

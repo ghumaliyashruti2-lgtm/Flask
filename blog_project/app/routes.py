@@ -1,12 +1,12 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from .models import Post , Comment
+from .models import Post , Comment, Like
 from . import db
 from flask_login import login_user, logout_user, login_required
 from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user
 from flask import flash
-
+from sqlalchemy import or_
 main = Blueprint("main", __name__)
 
 # show blog detail 
@@ -15,9 +15,9 @@ main = Blueprint("main", __name__)
 @login_required
 def home():
     # this show all user post its used when user have comment in post .
-    ''' posts = Post.query.all()
-    # this show only user own post '''
-    posts = Post.query.filter_by(author=current_user).all()
+    posts = Post.query.all()
+    '''# this show only user own post 
+    posts = Post.query.filter_by(author=current_user).all()'''
     return render_template("index.html", posts=posts)
 
 '''
@@ -256,3 +256,36 @@ def edit_comment(id):
         return redirect("/")
 
     return render_template("edit_comment.html", comment=comment)
+
+
+@main.route("/like/<int:post_id>")
+@login_required
+def like_post(post_id):
+
+    post = Post.query.get_or_404(post_id)
+
+    like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+
+    if like:
+        db.session.delete(like)   # unlike
+    else:
+        new_like = Like(user_id=current_user.id, post_id=post_id)
+        db.session.add(new_like)
+
+    db.session.commit()
+
+    return redirect("/")
+
+# search content 
+@main.route("/search")
+def search():
+
+    query = request.args.get("query")
+
+    posts = Post.query.filter(
+            (Post.title.contains(query)) |
+            (Post.content.contains(query)) |
+            (Post.comments.any(Comment.text.contains(query)))
+        ).all()
+
+    return render_template("search.html", posts=posts, query=query)

@@ -20,6 +20,7 @@ class User(db.Model, UserMixin):
 
     posts = db.relationship("Post", backref="author", lazy=True)
     comment = db.relationship("Comment", backref="author", lazy=True)
+    likes = db.relationship("Like", backref="author", lazy=True)
      # backref="author" means its connection between post and user bakcref is used for automatic reverse connection post->user and user->post access.
     
 class Post(db.Model):
@@ -30,6 +31,7 @@ class Post(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     comments = db.relationship("Comment", backref="post", cascade="all, delete")
+    likes = db.relationship("Like", backref="post", cascade="all, delete")
     
     
 # comment 
@@ -43,3 +45,15 @@ class Comment(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
 
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"))    
+    
+    
+# like comment 
+
+class Like(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+
+    post_id = db.Column(db.Integer, db.ForeignKey("post.id"))   
+     
