@@ -57,11 +57,9 @@
 
 {% endif %} -->
 
-<!-- only match content show -->
+<!-- it show match content but, it not show when post and comment both have match content  -->
 
-{% extends "base.html" %}
-
-{% block content %}
+<!--
 
 <h2>Search Results</h2>
 
@@ -92,6 +90,36 @@
     <p>No results found</p>
 
 {% endif %}
+-->
 
-{% endblock %}
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Search Results</h2>
+
+{% if posts %}
+    <h3>Matched Posts</h3>
+    {% for post in posts %}
+        <p><b>{{ post.title }}</b> : {{ post.content }}</p>
+        <hr>
+    {% endfor %}
+{% endif %}
+
+{% if comments %}
+    <h3>Matched Comments</h3>
+    {% for comment in comments %}
+        <p>
+            <b>{{ comment.author.username }}</b> :
+            {{ comment.text }}
+        </p>
+        <small>Post : {{ comment.post.title }}</small>
+        <hr>
+    {% endfor %}
+{% endif %}
+
+{% if not posts and not comments %}
+    <p>No results found</p>
+{% endif %}
  
+{% endblock %}
