@@ -282,10 +282,30 @@ def search():
 
     query = request.args.get("query")
 
+    matched_posts = []
+    matched_comments = []
+
+    # 1️⃣ search in posts
     posts = Post.query.filter(
-            (Post.title.contains(query)) |
-            (Post.content.contains(query)) |
-            (Post.comments.any(Comment.text.contains(query)))
+        or_(
+            Post.title.ilike(f"%{query}%"),
+            Post.content.ilike(f"%{query}%")
+        )
+    ).all()
+
+    if posts:
+        matched_posts = posts
+    else:
+        # 2️⃣ if no post found → search in comments
+        comments = Comment.query.filter(
+            Comment.text.ilike(f"%{query}%")
         ).all()
 
-    return render_template("search.html", posts=posts, query=query)
+        matched_comments = comments
+
+    return render_template(
+        "search.html",
+        posts=matched_posts,
+        comments=matched_comments,
+        query=query
+    )
