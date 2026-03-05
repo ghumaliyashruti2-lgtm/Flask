@@ -25,7 +25,9 @@
 {% for comment in post.comments %}
     <p>
         <b>
-            <a href="{{ url_for('main.user_profile', username=comment.author.username) }}" style="text-decoration : none; color : rgb(215,197,100) ;">
+            {% if comment.author == current_user %}
+                <a href="{{ url_for('main.user_profile', username=comment.author.username) }}" style="text-decoration : none; color : rgb(215,197,100) ;">
+            {% endif %}
                 {{ comment.author.username }} :
             </a>
         </b>
@@ -46,8 +48,6 @@
 
 </form>
 
-
-
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% for category, message in messages %}
       <div class="alert alert-{{ category }}">
@@ -58,5 +58,21 @@
       
 
 {% endfor %}
+
+
+<div>
+
+{% if posts.has_prev %}
+<a href="{{ url_for('main.home', page=posts.prev_num) }}">Previous</a>
+{% endif %}
+
+Page {{ posts.page }} of {{ posts.pages }}
+
+{% if posts.has_next %}
+<a href="{{ url_for('main.home', page=posts.next_num) }}">Next</a>
+{% endif %}
+
+</div>
+
 
 {% endblock %}

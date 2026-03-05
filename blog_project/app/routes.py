@@ -11,15 +11,45 @@ main = Blueprint("main", __name__)
 
 # show blog detail 
 
+'''
+# normal home page show 
 @main.route("/")
 @login_required
 def home():
     # this show all user post its used when user have comment in post .
-    posts = Post.query.all()
-    '''# this show only user own post 
-    posts = Post.query.filter_by(author=current_user).all()'''
+    # posts = Post.query.all()
+    # this show only user own post 
+    # posts = Post.query.filter_by(author=current_user).all()
     return render_template("index.html", posts=posts)
+'''
 
+'''
+# pagination add but not work because we have only one page 
+@login_required
+@main.route("/")
+@main.route("/page/<int:page>")
+def home(page=1):
+
+    posts = Post.query.order_by(Post.id.desc()).paginate(
+        page=page,
+        per_page=5
+    )
+
+    return render_template("index.html", posts=posts)
+ '''
+# pagination show per page only one post show 
+@login_required
+@main.route("/")
+def home():
+
+    page = request.args.get('page', 1, type=int)
+
+    posts = Post.query.order_by(Post.id.desc()).paginate(
+        page=page,
+        per_page=1
+    )
+
+    return render_template("index.html", posts=posts)
 '''
 # add blog detail 
 @main.route("/add", methods=["GET","POST"])
