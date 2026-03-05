@@ -1,7 +1,4 @@
-<!-- {% extends "base.html" %}
-
-{% block content %}
-
+<!-- its search only on post  
 <h2>Search Results for "{{ query }}"</h2>
 
 {% if posts %}
@@ -18,15 +15,9 @@
 
 <p>No posts found</p>
 
-{% endif %}
+{% endif %} -->
 
-{% endblock %} -->
-
-<!--- its show comment also ..-->
-
-{% extends "base.html" %}
-
-{% block content %}
+<!--its search on comment also 
 
 <h2>Search Results</h2>
 
@@ -64,6 +55,43 @@
 
 <p>No posts found</p>
 
+{% endif %} -->
+
+<!-- only match content show -->
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Search Results</h2>
+
+{% if posts %}
+
+    <h3>Matched Posts</h3>
+
+    {% for post in posts %}
+        <p><b>{{ post.title }}</b> : {{ post.content }}</p>
+        <hr>
+    {% endfor %}
+
+{% elif comments %}
+
+    <h3>Matched Comments</h3>
+
+    {% for comment in comments %}
+        <p>
+            <b>{{ comment.author.username }}</b> :
+            {{ comment.text }}
+        </p>
+        <small>Post : {{ comment.post.title }}</small>
+        <hr>
+    {% endfor %}
+
+{% else %}
+
+    <p>No results found</p>
+
 {% endif %}
 
 {% endblock %}
+ 
