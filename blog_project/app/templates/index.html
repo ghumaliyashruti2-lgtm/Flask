@@ -9,19 +9,23 @@
 
 <!-- its allow edit and delete only own post -->
 {% if post.author == current_user %} 
-    <a href="{{ url_for('main.edit_post', id=post.id) }}">Edit</a>
-    <a href="{{ url_for('main.delete_post', id=post.id) }}">Delete</a>
+    <a href="{{ url_for('main.edit_post', id=post.id) }}" style="text-decoration : none; color: blue; ">Edit</a>
+    <a href="{{ url_for('main.delete_post', id=post.id) }}" style="text-decoration : none; color: red;">Delete</a>
 {% endif %}
 
 <h4>Comments</h4>
 
 {% for comment in post.comments %}
     <p>
-        <b>{{ comment.author.username }}</b> :
+        <b>
+            <a href="{{ url_for('main.user_profile', username=comment.author.username) }}" style="text-decoration : none; color : rgb(215,197,100) ;">
+                {{ comment.author.username }}
+            </a>
+        </b> :
         {{ comment.text }}
         {% if comment.author == current_user %}
-            <a href="{{ url_for('main.edit_comment', id=comment.id) }}">Edit</a>
-            <a href="{{ url_for('main.delete_comment', id=comment.id) }}">Delete</a>
+            <a href="{{ url_for('main.edit_comment', id=comment.id) }}" style="text-decoration : none; color: blue; ">Edit</a>
+            <a href="{{ url_for('main.delete_comment', id=comment.id) }}" style="text-decoration : none; color: red;">Delete</a>
         {% endif %}
     </p>
 {% endfor %}

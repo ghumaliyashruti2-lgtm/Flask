@@ -15,9 +15,9 @@ main = Blueprint("main", __name__)
 @login_required
 def home():
     # this show all user post its used when user have comment in post .
-    posts = Post.query.all()
-    '''# this show only user own post 
-    posts = Post.query.filter_by(author=current_user).all()'''
+    ''' posts = Post.query.all()
+    # this show only user own post '''
+    posts = Post.query.filter_by(author=current_user).all()
     return render_template("index.html", posts=posts)
 
 '''
@@ -188,10 +188,18 @@ def delete_post(id):
     return redirect("/")
 
 # profile 
-@main.route("/profile")
-@login_required
-def profile():
-    return render_template("profile.html")
+@main.route("/user/<username>")
+def user_profile(username):
+
+    user = User.query.filter_by(username=username).first_or_404()
+
+    posts = Post.query.filter_by(user_id=user.id).all()
+
+    # show comments in profile page .. 
+    comments = Comment.query.filter_by(user_id=user.id).all()
+   
+    return render_template("profile.html", user=user, posts=posts , comments=comments)
+
 
 # add and show comment 
 @main.route("/comment/<int:post_id>", methods=["POST"])
