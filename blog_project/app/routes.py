@@ -197,8 +197,12 @@ def user_profile(username):
 
     # show comments in profile page .. 
     comments = Comment.query.filter_by(user_id=user.id).all()
+    
+    # show like in profile page 
+    likes = Like.query.filter_by(user_id=user.id).all()
+
    
-    return render_template("profile.html", user=user, posts=posts , comments=comments)
+    return render_template("profile.html", user=user, posts=posts , comments=comments , likes=likes)
 
 
 # add and show comment 

@@ -4,28 +4,35 @@
 
 <h1>{{ user.username }}'s Profile</h1>
 
-<h2>Posts</h2>
+<p>Total Posts : {{ posts|length }}</p>
+<p>Total Comments : {{ comments|length }}</p>
+<p>Total Likes : {{ likes|length }}</p>
 
-{% for post in posts %}
+<hr>
 
-<h3>{{ post.title }}</h3>
-<p>{{ post.content }}</p>
+<h3>Posts</h3>
 
-{% else %}
+    {% for post in posts %}
 
-<p>No posts yet.</p>
+    <h3>{{ post.title }}</h3>
+    <p>{{ post.content }}</p>
 
-{% endfor %}
+    {% else %}
 
+    <p>No posts yet.</p>
 
-{% for comment in comments %}
+    {% endfor %}
 
-<p>{{comment.text}}</p>
+<h3>Comment:</h3>
 
-{% else %}
+    {% for comment in comments %}
 
-<p>No Comment yet.</p>
+    <p><b>{{user.username}} : </b>{{comment.text}}</p>
 
-{% endfor %}
+    {% else %}
+
+    <p>No Comment yet.</p>
+
+    {% endfor%}
 
 {% endblock %}
