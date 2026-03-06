@@ -15,8 +15,16 @@ from flask_login import UserMixin
 class User(db.Model, UserMixin):
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(150))
+
+    username = db.Column(db.String(150), unique=True, nullable=False)
+
+    email = db.Column(db.String(200), unique=True, nullable=False)
+
+    password = db.Column(db.String(150), nullable=False)
+
+    otp = db.Column(db.String(6))
+
+    is_verified = db.Column(db.Boolean, default=False)
 
     posts = db.relationship("Post", backref="author", lazy=True)
     comment = db.relationship("Comment", backref="author", lazy=True)

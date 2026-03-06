@@ -7,8 +7,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import current_user
 from flask import flash
 from sqlalchemy import or_
-main = Blueprint("main", __name__)
+import random
+from app import mail
+from email.mime.text import MIMEText
+import smtplib, re
+from flask import session
 
+main = Blueprint("main", __name__)
 # show blog detail 
 
 '''
@@ -100,33 +105,128 @@ def edit_post(id):
 
     return render_template("edit_post.html", post=post)'''
 
-# Register
+# email validation 
 
+def valid_email(email):
+
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+    if re.match(pattern, email):
+        return True
+    return False
+
+
+# Register
+import random
 @main.route("/register", methods=["GET","POST"])
 def register():
 
     if request.method == "POST":
 
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
 
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user:
-            return "Username already exists"
-        
-        # store password in has formate
+        print("USERNAME:", username)
+        print("EMAIL:", email)
+        print("PASSWORD:", password)
+
+        if not valid_email(email):
+            print("EMAIL INVALID")
+            flash("Invalid Email")
+            return redirect(url_for("main.register"))
+
+        existing = User.query.filter_by(email=email).first()
+
+        if existing:
+            print("EMAIL EXISTS")
+            flash("Email already exists")
+            return redirect(url_for("main.register"))
+
+        print("REGISTER SUCCESS")
+
+        otp = str(random.randint(100000,999999))
+
         hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password=hashed_password)
 
-        db.session.add(new_user)
+        user = User(
+            username=username,
+            email=email,
+            password=hashed_password,
+            otp=otp
+        )
+
+        db.session.add(user)
         db.session.commit()
 
-        return redirect("/login")
+        send_otp_email(email, otp)
+
+        session["verify_email"] = email
+
+        return redirect(url_for("main.verify"))
 
     return render_template("register.html")
 
-# Login 
+# otp generate 
 
+def generate_otp():
+    return str(random.randint(100000,999999))
+
+# otp send 
+def send_otp_email(receiver, otp):
+
+    sender = "ghumaliyashruti2@gmail.com"
+    password = "wxtx wbvm ygri ffei" # APP PASSWORD
+
+    msg = MIMEText(f"Your OTP is: {otp}")
+    msg["Subject"] = "Email Verification OTP"
+    msg["From"] = sender
+    msg["To"] = receiver
+
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.starttls()
+    server.login(sender, password)
+
+    server.sendmail(sender, receiver, msg.as_string())
+    server.quit()
+
+# verify email 
+@main.route("/verify", methods=["GET","POST"])
+def verify():
+
+    email = session.get("verify_email")
+
+    if not email:
+        flash("Session expired")
+        return redirect(url_for("main.register"))
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user:
+        flash("User not found")
+        return redirect(url_for("main.register"))
+
+    if request.method == "POST":
+
+        otp = request.form.get("otp")
+
+        if otp == user.otp:
+
+            user.is_verified = True
+            user.otp = None
+
+            db.session.commit()
+
+            flash("Email Verified Successfully")
+
+            return redirect(url_for("main.login"))
+
+        else:
+            flash("Invalid OTP")
+
+    return render_template("verify.html")
+
+# Login 
 @main.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -135,16 +235,20 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        # Find user in database
         user = User.query.filter_by(username=username).first()
 
-        # Check username exists AND password is correct
         if user and check_password_hash(user.password, password):
+
+            if not user.is_verified:
+                flash("Please verify your email first")
+                session["verify_email"] = user.email
+                return redirect(url_for("main.verify"))
+
             login_user(user)
             return redirect(url_for("main.home"))
 
         else:
-            flash("Invalid username or password", "danger")
+            flash("Invalid username or password")
 
     return render_template("login.html")
 
