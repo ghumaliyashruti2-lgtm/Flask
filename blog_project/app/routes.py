@@ -145,32 +145,35 @@ def register():
 
         print("REGISTER SUCCESS")
 
-        otp = str(random.randint(100000,999999))
+        otp = str(random.randint(100000,999999)) # otp generate 
 
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(password) # conver password into hash 
 
         user = User(
             username=username,
             email=email,
             password=hashed_password,
             otp=otp
-        )
+        ) # store in database otp is (temparary)
 
         db.session.add(user)
         db.session.commit()
-
+        # permenanat store user 
         send_otp_email(email, otp)
+        # call send otp email function with parameter user email and otp 
 
         session["verify_email"] = email
-
+        # store email in session 
         return redirect(url_for("main.verify"))
+        # rediret page verify 
 
     return render_template("register.html")
 
 # otp generate 
 
 def generate_otp():
-    return str(random.randint(100000,999999))
+    return str(random.randint(100000,999999)) 
+    # generate otp 
 
 # otp send 
 def send_otp_email(receiver, otp):
@@ -251,6 +254,105 @@ def login():
             flash("Invalid username or password")
 
     return render_template("login.html")
+
+# forgot password 
+
+@main.route("/forgot-password", methods=["GET","POST"])
+def forgot_password():
+
+    if request.method == "POST":
+
+        email = request.form.get("email")
+
+        user = User.query.filter_by(email=email).first()
+
+        if not user:
+            flash("Email not registered")
+            return redirect(url_for("main.forgot_password"))
+
+        otp = str(random.randint(100000,999999))
+
+        user.otp = otp
+        db.session.commit()
+
+        send_otp_email(email, otp)
+
+        session["reset_email"] = email
+
+        flash("OTP sent to your email")
+
+        return redirect(url_for("main.verify_reset_otp"))
+
+    return render_template("forgot_password.html")
+
+# reset otp 
+
+@main.route("/verify-reset-otp", methods=["GET","POST"])
+def verify_reset_otp():
+
+    email = session.get("reset_email")
+
+    if not email:
+        flash("Session expired")
+        return redirect(url_for("main.forgot_password"))
+
+    user = User.query.filter_by(email=email).first()
+
+    if request.method == "POST":
+
+        otp = request.form.get("otp")
+
+        if otp == user.otp:
+
+            session["reset_verified"] = True
+            flash("OTP Verified")
+
+            return redirect(url_for("main.reset_password"))
+
+        else:
+            flash("Invalid OTP")
+
+    return render_template("verify_reset_otp.html")
+
+# reset password 
+
+@main.route("/reset-password", methods=["GET","POST"])
+def reset_password():
+
+    # get user email from session 
+    email = session.get("reset_email")
+
+    # when session expired its open forgot password page 
+    if not email:
+        return redirect(url_for("main.forgot_password"))
+
+    # when session not expired  
+    if request.method == "POST":
+
+        # get new password 
+        password = request.form.get("password")
+
+        # check user email with athorised email
+        user = User.query.filter_by(email=email).first()
+
+        # password convert into hashpassword 
+        hashed_password = generate_password_hash(password)
+
+        # set user new password replace with old 
+        user.password = hashed_password
+        user.otp = None
+
+        db.session.commit()
+
+        # remove session data 
+        session.pop("reset_email", None)
+        session.pop("reset_verified", None)
+
+        flash("Password reset successfully")
+
+        return redirect(url_for("main.login"))
+
+    return render_template("reset_password.html")
 
 # Logout 
 
