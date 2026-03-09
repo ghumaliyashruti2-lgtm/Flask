@@ -14,3 +14,5 @@ class Config:
     MAIL_USERNAME = "ghumaliyashruti2@gmail.com"
     MAIL_DEFAULT_SENDER = "mini_blog@gmail.com"
     MAIL_PASSWORD ="wxtx wbvm ygri ffei"
+    
+    UPLOAD_FOLDER = "static/images/post_images"

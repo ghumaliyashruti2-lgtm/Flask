@@ -6,6 +6,10 @@
 
 <h3>{{post.title}}</h3>
 <p>{{post.content}}</p>
+{% if post.image %}
+<img src="{{ url_for('static', filename='images/post_images/' + post.image) }}" width="200">
+{% endif %}
+<br>
 
 <!-- like dislike -->
 ❤️ {{ post.likes|length }} Likes

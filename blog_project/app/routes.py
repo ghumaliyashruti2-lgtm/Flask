@@ -365,26 +365,58 @@ def logout():
     logout_user()
     return redirect(url_for("main.login"))
 
+# image extention 
+
+ALLOWED_EXTENSIONS = {"png","jpg","jpeg","gif"}
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED_EXTENSIONS
+
+
 # add own post 
-@main.route("/add", methods=["GET","POST"])
+@main.route("/add", methods=["GET", "POST"])
 @login_required
 def add_post():
 
     if request.method == "POST":
 
-        title = request.form["title"]
-        content = request.form["content"]
+        title = request.form.get("title")
+        content = request.form.get("content")
 
-        new_post = Post(
+        # get image file 
+        file = request.files.get("image")
+        filename = None
+
+        # when file upload and not empty 
+        if file and file.filename != "":
+            filename = secure_filename(file.filename) # secure file from hacking 
+
+            # get full folder path 
+            upload_folder = os.path.join(
+                current_app.root_path,
+                "static/images/post_images"
+            )
+
+            # create folder if not exist
+            os.makedirs(upload_folder, exist_ok=True)
+
+            # full path folder + file 
+            filepath = os.path.join(upload_folder, filename)
+
+            file.save(filepath)
+
+        post = Post(
             title=title,
             content=content,
-            author=current_user
+            image=filename,
+            user_id=current_user.id
         )
 
-        db.session.add(new_post)
+        db.session.add(post)
         db.session.commit()
 
-        return redirect("/")
+        flash("Post created successfully", "success")
+        return redirect(url_for("main.home"))
 
     return render_template("add_post.html")
 
