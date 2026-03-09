@@ -26,6 +26,7 @@ class User(db.Model, UserMixin):
 
     is_verified = db.Column(db.Boolean, default=False)
 
+    profile_pic = db.Column(db.String(200), default="default_profile.png")
     posts = db.relationship("Post", backref="author", lazy=True)
     comment = db.relationship("Comment", backref="author", lazy=True)
     likes = db.relationship("Like", backref="author", lazy=True)

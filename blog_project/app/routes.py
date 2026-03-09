@@ -12,6 +12,9 @@ from app import mail
 from email.mime.text import MIMEText
 import smtplib, re
 from flask import session
+import os
+from flask import current_app
+from werkzeug.utils import secure_filename
 
 main = Blueprint("main", __name__)
 # show blog detail 
@@ -440,6 +443,63 @@ def user_profile(username):
    
     return render_template("profile.html", user=user, posts=posts , comments=comments , likes=likes)
 
+# upload profile picture .
+
+@main.route("/upload-profile-pic", methods=["POST"])
+@login_required
+def upload_profile_pic():
+
+    # get profile img
+    file = request.files.get("profile_pic")
+
+    # when user upload file 
+    if file:
+
+        filename = secure_filename(file.filename)
+
+        # stored here user profile images 
+        upload_folder = os.path.join(
+            current_app.root_path,
+            "static/images/profile_picture"
+        )
+
+        # when folder not exit 
+        os.makedirs(upload_folder, exist_ok=True)
+
+        filepath = os.path.join(upload_folder, filename)
+
+        file.save(filepath)
+
+        # stored image in user field 
+        current_user.profile_pic = filename
+        db.session.commit()
+
+        flash("Profile picture updated!")
+
+    return redirect(url_for("main.user_profile", username=current_user.username))
+
+# delete profile img
+@main.route("/delete-profile-image", methods=["POST"])
+@login_required
+def delete_profile_image():
+
+    if current_user.profile_pic != "default_profile.png":
+
+        image_path = os.path.join(
+            current_app.root_path,
+            "static/images/profile_picture",
+            current_user.profile_pic
+        )
+
+        if os.path.exists(image_path):
+            os.remove(image_path)
+
+        current_user.profile_pic = "default_profile.png"
+        db.session.commit()
+
+    flash("Profile image removed successfully", "success")
+
+    return redirect(url_for("main.user_profile", username=current_user.username))
 
 # add and show comment 
 @main.route("/comment/<int:post_id>", methods=["POST"])

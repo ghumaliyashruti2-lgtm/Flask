@@ -2,6 +2,35 @@
 
 {% block content %}
 
+<h2>{{ user.username }}</h2>
+
+<img 
+src="{{ url_for('static', filename='images/profile_picture/' + user.profile_pic) }}" 
+width="120"
+height="120"
+style="border-radius:50%; object-fit:cover;"
+>
+
+{% if current_user.id == user.id %}
+
+<form action="{{ url_for('main.upload_profile_pic') }}" 
+method="POST" 
+enctype="multipart/form-data">
+
+<input type="file" name="profile_pic" required>
+
+<button type="submit">Upload Profile Picture</button>
+
+</form>
+
+<form action="{{ url_for('main.delete_profile_image') }}" method="POST">
+    <button onclick="return confirm('Are you sure you want to delete profile image?')">
+        Delete Image
+    </button>
+</form>
+
+{% endif %}
+
 <h1>{{ user.username }}'s Profile</h1>
 
 <p>Total Posts : {{ posts|length }}</p>
