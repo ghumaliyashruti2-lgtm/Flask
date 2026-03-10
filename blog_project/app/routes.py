@@ -44,20 +44,8 @@ def home(page=1):
     )
 
     return render_template("index.html", posts=posts)
- '''
-# pagination show per page only one post show 
-@login_required
-@main.route("/")
-def home():
-
-    page = request.args.get('page', 1, type=int)
-
-    posts = Post.query.order_by(Post.id.desc()).paginate(
-        page=page,
-        per_page=1
-    )
-
-    return render_template("index.html", posts=posts)
+'''
+ 
 '''
 # add blog detail 
 @main.route("/add", methods=["GET","POST"])
@@ -77,7 +65,9 @@ def add_post():
         return redirect("/")
 
     return render_template("add_post.html")
+'''
 
+'''
 # delete blog 
 @main.route("/delete/<int:id>")
 @login_required
@@ -89,7 +79,9 @@ def delete_post(id):
     db.session.commit()
 
     return redirect("/")
+'''
 
+'''
 # edit blog 
 @main.route("/edit/<int:id>", methods=["GET","POST"])
 @login_required
@@ -106,20 +98,13 @@ def edit_post(id):
 
         return redirect("/")
 
-    return render_template("edit_post.html", post=post)'''
+    return render_template("edit_post.html", post=post)
+'''
 
-# email validation 
+# ====================
+# REGISTER 
+# ====================
 
-def valid_email(email):
-
-    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-
-    if re.match(pattern, email):
-        return True
-    return False
-
-
-# Register
 import random
 @main.route("/register", methods=["GET","POST"])
 def register():
@@ -172,13 +157,29 @@ def register():
 
     return render_template("register.html")
 
-# otp generate 
+# ==================
+# EMAIL VALIDATION 
+# ================== 
+
+def valid_email(email):
+
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+
+    if re.match(pattern, email):
+        return True
+    return False
+
+# ===============
+# OTP GENERATE 
+# ===============
 
 def generate_otp():
     return str(random.randint(100000,999999)) 
     # generate otp 
 
-# otp send 
+# ================
+# OTP SEDN 
+# ================
 def send_otp_email(receiver, otp):
 
     sender = "ghumaliyashruti2@gmail.com"
@@ -196,7 +197,10 @@ def send_otp_email(receiver, otp):
     server.sendmail(sender, receiver, msg.as_string())
     server.quit()
 
-# verify email 
+# ================
+# VERIFY EMAIL
+# ================
+
 @main.route("/verify", methods=["GET","POST"])
 def verify():
 
@@ -232,7 +236,10 @@ def verify():
 
     return render_template("verify.html")
 
-# Login 
+# ==================
+# LOGIN 
+# ===================
+
 @main.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -258,7 +265,9 @@ def login():
 
     return render_template("login.html")
 
-# forgot password 
+# =================
+# FORGOT PASSWORD
+# =================
 
 @main.route("/forgot-password", methods=["GET","POST"])
 def forgot_password():
@@ -288,7 +297,9 @@ def forgot_password():
 
     return render_template("forgot_password.html")
 
-# reset otp 
+# =============
+# RESET OTP
+# =============
 
 @main.route("/verify-reset-otp", methods=["GET","POST"])
 def verify_reset_otp():
@@ -317,7 +328,9 @@ def verify_reset_otp():
 
     return render_template("verify_reset_otp.html")
 
-# reset password 
+# =================
+# RESET PASSWORD
+# =================
 
 @main.route("/reset-password", methods=["GET","POST"])
 def reset_password():
@@ -357,7 +370,9 @@ def reset_password():
 
     return render_template("reset_password.html")
 
-# Logout 
+# ==================
+# LOGOUT 
+# ==================
 
 @main.route("/logout")
 @login_required
@@ -373,7 +388,26 @@ def allowed_file(filename):
     return "." in filename and filename.rsplit(".",1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-# add own post 
+# ===========================================   
+# PER PAGE ONE POST FOR PAGINATION  
+# =========================================== 
+
+@login_required
+@main.route("/")
+def home():
+
+    page = request.args.get('page', 1, type=int)
+
+    posts = Post.query.order_by(Post.id.desc()).paginate(
+        page=page,
+        per_page=1
+    )
+
+    return render_template("index.html", posts=posts)
+
+# ===============
+# ADD  POST 
+# ===============
 @main.route("/add", methods=["GET", "POST"])
 @login_required
 def add_post():
@@ -420,7 +454,11 @@ def add_post():
 
     return render_template("add_post.html")
 
-# edit own post 
+
+# =================
+# EDIT  POST 
+# =================
+
 @main.route("/edit/<int:id>", methods=["GET","POST"])
 @login_required
 def edit_post(id):
@@ -442,7 +480,10 @@ def edit_post(id):
 
     return render_template("edit_post.html", post=post)
 
-# delete own post 
+# =================
+# DELETE  POST 
+# =================
+
 @main.route("/delete/<int:id>")
 @login_required
 def delete_post(id):
@@ -458,7 +499,10 @@ def delete_post(id):
 
     return redirect("/")
 
-# profile 
+# ====================
+# PROFILE 
+# ====================
+
 @main.route("/user/<username>")
 def user_profile(username):
 
@@ -475,7 +519,9 @@ def user_profile(username):
    
     return render_template("profile.html", user=user, posts=posts , comments=comments , likes=likes)
 
-# upload profile picture .
+# ==========================
+# UPLOAD PROFILE PICTURE 
+# ==========================
 
 @main.route("/upload-profile-pic", methods=["POST"])
 @login_required
@@ -510,7 +556,10 @@ def upload_profile_pic():
 
     return redirect(url_for("main.user_profile", username=current_user.username))
 
-# delete profile img
+# =========================
+# DELETE PROFILE IMAGE 
+# =========================
+
 @main.route("/delete-profile-image", methods=["POST"])
 @login_required
 def delete_profile_image():
@@ -533,7 +582,10 @@ def delete_profile_image():
 
     return redirect(url_for("main.user_profile", username=current_user.username))
 
-# add and show comment 
+# ======================
+# ADD AND SHOW COMMENT  
+# =======================
+
 @main.route("/comment/<int:post_id>", methods=["POST"])
 @login_required
 def add_comment(post_id):
@@ -551,7 +603,9 @@ def add_comment(post_id):
 
     return redirect("/")
 
-# delete comment 
+# =====================
+# DELETE COMMENT 
+# =====================
 
 @main.route("/delete-comment/<int:id>")
 @login_required
@@ -568,7 +622,10 @@ def delete_comment(id):
 
     return redirect("/")
 
-# edit own comment post 
+# ==========================
+# EDIT COMMENT
+# =========================
+
 @main.route("/edit-comment/<int:id>", methods=["GET","POST"])
 @login_required
 def edit_comment(id):
@@ -589,6 +646,9 @@ def edit_comment(id):
 
     return render_template("edit_comment.html", comment=comment)
 
+# ===========================
+# LIKE POST 
+# ==========================
 
 @main.route("/like/<int:post_id>")
 @login_required
@@ -608,7 +668,10 @@ def like_post(post_id):
 
     return redirect("/")
 
-# search content 
+# ========================
+# SEARCH CONTENT  
+# ========================
+
 @main.route("/search")
 def search():
 
