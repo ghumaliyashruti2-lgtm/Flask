@@ -7,11 +7,11 @@ from flask_login import current_user
 post_api = Blueprint("post_api", __name__)
 
    
-# ==================
-# GET POST HOME PAGE 
-# ===================
+# =======================
+# GET POST IN PAGINATION 
+# =======================
 
-@post_api.route("/posts")
+'''@post_api.route("/posts")
 def get_posts():
 
     page = request.args.get("page", 1, type=int)
@@ -33,8 +33,32 @@ def get_posts():
     return jsonify({
         "posts": data,
         "page": page
-    })
+    })'''
     
+    
+# =====================
+# GET POST IN ONE PAGE 
+# ==================== 
+
+
+@post_api.route("/posts")
+def get_posts():
+
+    posts = Post.query.order_by(Post.id.desc()).all()
+
+    data = []
+
+    for post in posts:
+        data.append({
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "user_id": post.user_id
+        })
+
+    return jsonify({
+        "posts": data
+    })  
 
 # ==================
 # ADD POST 

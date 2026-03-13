@@ -392,7 +392,7 @@ def allowed_file(filename):
 # PER PAGE ONE POST FOR PAGINATION  
 # =========================================== 
 
-@login_required
+'''@login_required
 @main.route("/")
 def home():
 
@@ -403,6 +403,19 @@ def home():
         per_page=1
     )
 
+    return render_template("index.html", posts=posts)'''
+
+# =======================
+#  ALL POST IN ONE PAGE 
+# =======================
+
+@main.route("/")
+@login_required
+def home():
+    # this show all user post its used when user have comment in post .
+    posts = Post.query.all()
+    # this show only user own post 
+    # posts = Post.query.filter_by(author=current_user).all()
     return render_template("index.html", posts=posts)
 
 # ===============

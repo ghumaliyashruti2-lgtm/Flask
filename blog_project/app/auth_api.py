@@ -18,10 +18,11 @@ auth_api = Blueprint("auth_api", __name__)
 @auth_api.route("/register", methods=["POST"])
 def register_api():
 
+    # get json data from user 
     data = request.get_json(silent=True)
 
     if not data:
-        return jsonify({"error": "Invalid JSON request"}), 400
+        return jsonify({"error": "Invalid JSON request"}), 400 # return in json 
 
     username = data.get("username")
     email = data.get("email")
@@ -113,6 +114,7 @@ def send_otp_email(receiver, otp):
 @auth_api.route("/verify", methods=["POST"])
 def verify_api():
 
+    # get data from user in json 
     data = request.get_json()
 
     email = data.get("email")
@@ -142,6 +144,7 @@ def verify_api():
 @auth_api.route("/login", methods=["POST"])
 def login_api():
 
+    # get data from user in json
     data = request.get_json()
 
     username = data.get("username")
@@ -173,6 +176,7 @@ def login_api():
 @auth_api.route("/forgot-password", methods=["POST"])
 def forgot_password_api():
 
+    # get data from user in json
     data = request.get_json()
     email = data.get("email")
 
@@ -200,6 +204,7 @@ def forgot_password_api():
 @auth_api.route("/verify-reset-otp", methods=["POST"])
 def verify_reset_otp_api():
 
+    # get data from user in json
     data = request.get_json()
     otp = data.get("otp")
 
@@ -228,6 +233,7 @@ def verify_reset_otp_api():
 @auth_api.route("/reset-password", methods=["POST"])
 def reset_password_api():
 
+    # get data from user in json
     data = request.get_json()
     password = data.get("password")
     

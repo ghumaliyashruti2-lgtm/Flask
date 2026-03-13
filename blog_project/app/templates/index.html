@@ -4,56 +4,142 @@
 
 {% for post in posts %}
 
-<h3>{{post.title}}</h3>
-<p>{{post.content}}</p>
-{% if post.image %}
-<img src="{{ url_for('static', filename='images/post_images/' + post.image) }}" width="200">
-{% endif %}
-<br>
+<div class="post-card">
 
-<!-- like dislike -->
-❤️ {{ post.likes|length }} Likes
+    <!-- POST HEADER -->
+    <div class="post-header">
 
-<a href="{{ url_for('main.like_post', post_id=post.id) }}">
-    Like / Unlike
-</a>
+        <img 
+        src="{{ url_for('static', filename='images/profile_picture/' + post.author.profile_pic) }}"
+        class="profile-img">
 
-<!-- its allow edit and delete only own post -->
-{% if post.author == current_user %} 
-    <a href="{{ url_for('main.edit_post', id=post.id) }}" style="text-decoration : none; color: blue; ">Edit</a>
-    <a href="{{ url_for('main.delete_post', id=post.id) }}" style="text-decoration : none; color: red;">Delete</a>
-{% endif %}
+        <div>
+            <div class="username">{{ post.author.username }}</div>
+        </div>
 
-<h4>Comments</h4>
+    </div>
 
-{% for comment in post.comments %}
-    <p>
-        <b>
-            {% if comment.author == current_user %}
-                <a href="{{ url_for('main.user_profile', username=comment.author.username) }}" style="text-decoration : none; color : rgb(215,197,100) ;">
-            {% endif %}
-                {{ comment.author.username }} :
-            </a>
-        </b>
-        {{ comment.text }}
-        {% if comment.author == current_user %}
-            <a href="{{ url_for('main.edit_comment', id=comment.id) }}" style="text-decoration : none; color: blue; ">Edit</a>
-            <a href="{{ url_for('main.delete_comment', id=comment.id) }}" style="text-decoration : none; color: red;">Delete</a>
+    <div class="post-body">
+        <!-- POST TITLE -->
+        <div class="post-title">
+
+            <h3>{{ post.title }}</h3>
+
+            {% if post.user_id == current_user.id %}
+    
+                <div class="menu-container">
+
+                    <i class="fa fa-ellipsis-v menu-icon"></i>
+
+                    <div class="menu-dropdown">
+
+                        {% if post.author == current_user %}
+                        <a href="{{ url_for('main.edit_post', id=post.id) }}">
+                            <i class="fa fa-edit"></i> Edit
+                        </a>
+
+                        <a href="{{ url_for('main.delete_post', id=post.id) }}">
+                            <i class="fa fa-trash"></i> Delete
+                        </a>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+            {% endif %}    
+
+        </div>
+
+        <!-- POST CONTENT -->
+        <div class="post-content">
+            {{ post.content }}
+        </div>
+
+        <!-- POST IMAGE -->
+        {% if post.image %}
+            <img 
+            src="{{ url_for('static', filename='images/post_images/' + post.image) }}" 
+            class="post-image">
         {% endif %}
-    </p>
+
+        <!-- LIKE SECTION -->
+        <div class="post-actions">
+
+            ❤️ {{ post.likes|length }}
+
+            <a href="{{ url_for('main.like_post', post_id=post.id) }}">
+                Like / Unlike
+            </a>
+
+        </div>
+        <br>
+        <!-- COMMENTS -->
+        <div class="comment-box">
+
+            <b>Comments</b>
+
+            {% for comment in post.comments %}
+
+                <div class="comment">
+
+                    <div class="comment-left">
+
+                        <b>
+                        {% if comment.user_id == current_user.id %}
+                            You:
+                        {% else %}
+                            {{ comment.author.username }}:
+                        {% endif %}
+                        </b>
+
+                        {{ comment.text }}
+
+                    </div>
+
+
+                    {% if comment.author == current_user %}
+                    <div class="menu-container">
+
+                        <i class="fa fa-ellipsis-v menu-icon"></i>
+
+                        <div class="menu-dropdown">
+
+                            <a href="{{ url_for('main.edit_comment', id=comment.id) }}">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
+
+                            <a href="{{ url_for('main.delete_comment', id=comment.id) }}">
+                                <i class="fa fa-trash"></i> Delete
+                            </a>
+
+                        </div>
+
+                    </div>
+                    {% endif %}
+
+                </div>
+
+            {% endfor %}
+
+            <!-- COMMENT FORM -->
+
+            <form action="{{ url_for('main.add_comment', post_id=post.id) }}" method="POST">
+
+                <input type="text" name="comment" placeholder="Write comment..." required>
+
+                <button type="submit">Comment</button>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>    
+
 {% endfor %}
-<hr>
 
-<form action="{{ url_for('main.add_comment', post_id=post.id) }}" method="POST">
 
-    <input type="text" name="comment" placeholder="Write comment..." required>
-
-    <button type="submit">Comment</button>
-
-</form>
-
-{% endfor %}
-
+<!-- PAGINATION 
 
 <div>
 
@@ -67,7 +153,7 @@ Page {{ posts.page }} of {{ posts.pages }}
 <a href="{{ url_for('main.home', page=posts.next_num) }}">Next</a>
 {% endif %}
 
-</div>
+</div>-->
 
 
 {% endblock %}
