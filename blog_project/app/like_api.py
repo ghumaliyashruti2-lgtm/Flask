@@ -1,5 +1,5 @@
 from flask import Blueprint,  request, jsonify
-from .models import Post , Like
+from .models import Post , Like , Comment
 from . import db
 from flask_login import login_required
 from flask_login import current_user
@@ -7,13 +7,14 @@ from sqlalchemy import or_
 
 like_api = Blueprint("like_api", __name__)
 
-# ===========================
-# LIKE POST 
-# ==========================
-
+# ==================
+# LIKE / UNLIKE POST
+# ==================
 @like_api.route("/like/<int:post_id>", methods=["POST"])
 @login_required
-def like_post_api(post_id):
+def like_post(post_id):
+
+    post = Post.query.get_or_404(post_id)
 
     like = Like.query.filter_by(
         user_id=current_user.id,
@@ -22,34 +23,30 @@ def like_post_api(post_id):
 
     if like:
         db.session.delete(like)
-        action = "unliked"
+        db.session.commit()
+        return jsonify({"message": "Post unliked"})
     else:
         new_like = Like(
             user_id=current_user.id,
             post_id=post_id
         )
         db.session.add(new_like)
-        action = "liked"
+        db.session.commit()
 
-    db.session.commit()
-
-    return jsonify({
-        "message": action
-    })
-
+        return jsonify({"message": "Post liked"})
     
 # ====================
 # SEARCH 
 # ====================
-
 @like_api.route("/search")
 def search_api():
 
-    query = request.args.get("query","")
+    query = request.args.get("query", "").strip()
 
     if not query:
-        return jsonify({"error":"Search query required"}),400
-    
+        return jsonify({"error": "Search query required"}), 400
+
+    # 🔎 search in posts
     posts = Post.query.filter(
         or_(
             Post.title.ilike(f"%{query}%"),
@@ -57,13 +54,30 @@ def search_api():
         )
     ).all()
 
-    data = []
+    # 🔎 search in comments
+    comments = Comment.query.filter(
+        Comment.text.ilike(f"%{query}%")
+    ).all()
+
+    post_data = []
+    comment_data = []
 
     for post in posts:
-        data.append({
+        post_data.append({
             "id": post.id,
             "title": post.title,
             "content": post.content
         })
 
-    return jsonify(data)
+    for comment in comments:
+        comment_data.append({
+            "id": comment.id,
+            "text": comment.text,
+            "post_id": comment.post_id,
+            "user_id": comment.user_id
+        })
+
+    return jsonify({
+        "posts": post_data,
+        "comments": comment_data
+    })
