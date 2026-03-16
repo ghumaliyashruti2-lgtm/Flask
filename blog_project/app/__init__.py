@@ -3,7 +3,6 @@ from .config import Config
 from .extensions import db, login_manager, mail, jwt, jwt_blacklist
 from .models.user_model import User
 
-
 def create_app():
 
     app = Flask(__name__)
@@ -21,13 +20,23 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # ⭐ JWT BLACKLIST CHECK (MUST BE INSIDE FUNCTION)
+    # JWT blacklist check
     @jwt.token_in_blocklist_loader
     def check_if_token_revoked(jwt_header, jwt_payload):
         jti = jwt_payload["jti"]
         return jti in jwt_blacklist
 
-    # API Routes
+
+    # =========================
+    # REGISTER BROWSER ROUTES
+    # =========================
+    from .routes import main
+    app.register_blueprint(main)
+
+
+    # =========================
+    # REGISTER API ROUTES
+    # =========================
     from .api.auth_api import auth_api
     app.register_blueprint(auth_api, url_prefix="/api/auth")
 

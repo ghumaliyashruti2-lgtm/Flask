@@ -6,6 +6,12 @@ from ..repositories.post_repo import (
     delete_post,
     update_post
 )
+import os
+from werkzeug.utils import secure_filename
+from app.models.post_model import Post
+from ..repositories.post_repo import save_post
+
+UPLOAD_FOLDER = "app/static/images/post_images"
 
 def get_posts_service():
 
@@ -18,12 +24,15 @@ def get_posts_service():
             "id": post.id,
             "title": post.title,
             "content": post.content,
-            "user_id": post.user_id
+            "user_id": post.user_id,
+            "image": f"/static/images/post_images/{post.image}" if post.image else None
         })
 
     return {"posts": data}, 200
 
-def create_post_service(data, user_id):
+
+
+def create_post_service(data, file, user_id):
 
     title = data.get("title")
     content = data.get("content")
@@ -31,9 +40,22 @@ def create_post_service(data, user_id):
     if not title or not content:
         return {"error": "Title and content required"}, 400
 
+    filename = None
+
+    if file:
+
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        filename = secure_filename(file.filename)
+
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+        file.save(filepath)
+
     post = Post(
         title=title,
         content=content,
+        image=filename,
         user_id=user_id
     )
 
