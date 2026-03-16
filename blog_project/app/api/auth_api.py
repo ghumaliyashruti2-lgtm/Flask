@@ -1,4 +1,6 @@
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required,get_jwt
+from ..extensions import jwt_blacklist
 from app.services.auth_service import (
     register_user,
     verify_email,
@@ -68,9 +70,10 @@ def reset():
 from flask_login import login_required
 
 @auth_api.route("/logout")
-@login_required
+@jwt_required()
 def logout():
 
-    result, status = logout_user_service()
+    jti = get_jwt()["jti"]
+    jwt_blacklist.add(jti)
 
-    return jsonify(result), status
+    return jsonify({"message": "Logout successful"}), 200

@@ -12,6 +12,8 @@ from ..utils.file_upload import (
     delete_profile_picture
 )
 
+from app.models.user_model import User
+
 def get_user_profile_service(username):
 
     user = get_user_by_username(username)
@@ -53,8 +55,10 @@ def get_user_profile_service(username):
     }, 200
     
     
-def upload_profile_picture_service(file, user):
-
+def upload_profile_picture_service(file, user_id):
+    
+    user = User.query.get(user_id)
+    
     if not file:
         return {"error": "No file uploaded"}, 400
 
@@ -73,7 +77,9 @@ def upload_profile_picture_service(file, user):
     }, 200
     
     
-def delete_profile_picture_service(user):
+def delete_profile_picture_service(user_id):
+    
+    user = user = User.query.get(user_id)
 
     if user.profile_pic != "default_profile.png":
 

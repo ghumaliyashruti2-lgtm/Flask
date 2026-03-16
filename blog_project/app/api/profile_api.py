@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_login import login_required, current_user
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from ..services.profile_service import (
     get_user_profile_service,
@@ -18,19 +19,23 @@ def user_profile(username):
 
 
 @profile_api.route("/upload-profile-pic", methods=["POST"])
-@login_required
+@jwt_required()
 def upload_profile_pic():
+    
+    user_id = int(get_jwt_identity())
 
     file = request.files.get("profile_pic")
 
-    result, status = upload_profile_picture_service(file, current_user)
+    result, status = upload_profile_picture_service(file, user_id)
 
     return jsonify(result), status
 
 @profile_api.route("/delete-profile-image", methods=["DELETE"])
-@login_required
+@jwt_required()
 def delete_profile_image():
+    
+    user_id = int(get_jwt_identity())
 
-    result, status = delete_profile_picture_service(current_user)
+    result, status = delete_profile_picture_service(user_id)
 
     return jsonify(result), status

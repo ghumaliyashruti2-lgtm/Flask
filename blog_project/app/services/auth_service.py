@@ -12,6 +12,7 @@ from app.repositories.user_repo import (
 from app.utils.otp import generate_otp
 from app.utils.email_verify import send_otp_email
 from app.models.user_model import User
+from flask_jwt_extended import create_access_token
 
 
 # ====================
@@ -91,12 +92,15 @@ def login_user_service(data):
     if not user.is_verified:
         return {"error": "Email not verified"}, 403
 
+    token = create_access_token(identity=str(user.id))
+    
     login_user(user)
 
     return {
         "message": "Login successful",
         "user_id": user.id,
-        "username": user.username
+        "username": user.username,
+        "token":token
     }, 200
     
 # ==================

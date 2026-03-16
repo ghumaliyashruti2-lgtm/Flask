@@ -5,13 +5,15 @@ from app.models.comment_model import Comment
 def save_comment(comment):
     db.session.add(comment)
     db.session.commit()
+    
+def get_all_comments():
+    return Comment.query.all()
 
 
 def get_comments_by_post(post_id):
 
     return Comment.query.filter_by(
         post_id=post_id,
-        parent_id=None
     ).all()
 
 

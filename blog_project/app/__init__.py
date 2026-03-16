@@ -1,7 +1,8 @@
 from flask import Flask
 from .config import Config
-from .extensions import db,login_manager,mail 
+from .extensions import db, login_manager, mail, jwt, jwt_blacklist
 from .models.user_model import User
+
 
 def create_app():
 
@@ -14,14 +15,17 @@ def create_app():
     login_manager.login_view = "main.login"
 
     mail.init_app(app)
+    jwt.init_app(app)
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # HTML Routes
-    # from .api.routes import main
-    # app.register_blueprint(main)
+    # ⭐ JWT BLACKLIST CHECK (MUST BE INSIDE FUNCTION)
+    @jwt.token_in_blocklist_loader
+    def check_if_token_revoked(jwt_header, jwt_payload):
+        jti = jwt_payload["jti"]
+        return jti in jwt_blacklist
 
     # API Routes
     from .api.auth_api import auth_api
@@ -35,7 +39,7 @@ def create_app():
 
     from .api.like_api import like_api
     app.register_blueprint(like_api, url_prefix="/api/like")
-    
+
     from .api.search_api import search_api
     app.register_blueprint(search_api, url_prefix="/api/search")
 

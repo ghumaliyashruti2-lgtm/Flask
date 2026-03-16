@@ -72,6 +72,6 @@ def edit_post_service(post_id, data, user_id):
     post.title = data.get("title", post.title)
     post.content = data.get("content", post.content)
 
-    update_post()
+    update_post(post)
 
     return {"message": "Post updated"}, 200

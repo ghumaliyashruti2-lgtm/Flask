@@ -4,19 +4,20 @@ from app.repositories.comment_repo import (
     get_comments_by_post,
     get_comment_by_id,
     delete_comment,
-    update_comment
+    update_comment,
+    get_all_comments
 )
 
 def add_comment(data, user_id):
 
-    content = data.get("content")
+    text = data.get("text")
     post_id = data.get("post_id")
 
-    if not content:
+    if not text:
         return {"error": "Comment cannot be empty"}, 400
 
     comment = Comment(
-        content=content,
+        text=text,
         user_id=user_id,
         post_id=post_id
     )
@@ -27,20 +28,14 @@ def add_comment(data, user_id):
 
 def reply_comment(data, user_id):
 
-    content = data.get("content")
+    text = data.get("text")
     post_id = data.get("post_id")
-    parent_id = data.get("parent_id")
-
-    parent_comment = get_comment_by_id(parent_id)
-
-    if not parent_comment:
-        return {"error": "Parent comment not found"}, 404
 
     reply = Comment(
-        content=content,
+        text=text,
         user_id=user_id,
         post_id=post_id,
-        parent_id=parent_id
+        
     )
 
     save_comment(reply)
@@ -57,7 +52,7 @@ def edit_comment(comment_id, data, user_id):
     if comment.user_id != user_id:
         return {"error": "Unauthorized"}, 403
 
-    comment.content = data.get("content")
+    comment.text = data.get("text")
 
     update_comment()
 
@@ -85,18 +80,27 @@ def get_post_comments(post_id):
     result = []
 
     for c in comments:
-
         result.append({
             "id": c.id,
-            "content": c.content,
+            "text": c.text,
             "user_id": c.user_id,
-            "replies": [
-                {
-                    "id": r.id,
-                    "content": r.content,
-                    "user_id": r.user_id
-                } for r in c.replies
-            ]
+            "post_id": c.post_id
+        })
+
+    return {"comments": result}, 200
+
+def get_all_comments_service():
+
+    comments = get_all_comments()
+
+    result = []
+
+    for c in comments:
+        result.append({
+            "id": c.id,
+            "comment": c.text,
+            "user_id": c.user_id,
+            "post_id": c.post_id
         })
 
     return {"comments": result}, 200

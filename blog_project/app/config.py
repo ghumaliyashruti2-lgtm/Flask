@@ -1,3 +1,4 @@
+
 class Config:
     SECRET_KEY = "secret123"
     SQLALCHEMY_DATABASE_URI = "sqlite:///database.db"
@@ -16,3 +17,9 @@ class Config:
     MAIL_PASSWORD ="wxtx wbvm ygri ffei"
     
     UPLOAD_FOLDER = "static/images/post_images"
+    
+    JWT_SECRET_KEY = "super-secret-key"
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ["access"]
+    from datetime import timedelta
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
