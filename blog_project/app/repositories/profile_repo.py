@@ -18,7 +18,6 @@ def get_user_comments(user_id):
 
 def get_user_likes(user_id):
     return Like.query.filter_by(user_id=user_id).all()
-
-
-def update_user():
+    
+def update_user(user):
     db.session.commit()

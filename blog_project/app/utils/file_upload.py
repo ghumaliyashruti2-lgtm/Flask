@@ -38,3 +38,21 @@ def delete_profile_picture(filename):
 
     if os.path.exists(image_path):
         os.remove(image_path)
+        
+
+def save_profile_picture(file):
+
+    filename = secure_filename(file.filename)
+
+    upload_folder = os.path.join(
+        current_app.root_path,
+        "static/images/profile_picture"
+    )
+
+    os.makedirs(upload_folder, exist_ok=True)
+
+    filepath = os.path.join(upload_folder, filename)
+
+    file.save(filepath)
+
+    return filename
