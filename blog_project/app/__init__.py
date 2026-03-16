@@ -1,17 +1,9 @@
 from flask import Flask
-from config import Config
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_mail import Mail
-
-login_manager = LoginManager()
-db = SQLAlchemy()
-mail = Mail()
-
+from .config import Config
+from .extensions import db,login_manager,mail 
+from .models.user_model import User
 
 def create_app():
-
-    from .models import User
 
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -28,23 +20,26 @@ def create_app():
         return User.query.get(int(user_id))
 
     # HTML Routes
-    from .routes import main
-    app.register_blueprint(main)
+    # from .api.routes import main
+    # app.register_blueprint(main)
 
     # API Routes
-    from .auth_api import auth_api
+    from .api.auth_api import auth_api
     app.register_blueprint(auth_api, url_prefix="/api/auth")
 
-    from .post_api import post_api
+    from .api.post_api import post_api
     app.register_blueprint(post_api, url_prefix="/api/post")
 
-    from .comment_api import comment_api
+    from .api.comment_api import comment_api
     app.register_blueprint(comment_api, url_prefix="/api/comment")
 
-    from .like_api import like_api
+    from .api.like_api import like_api
     app.register_blueprint(like_api, url_prefix="/api/like")
+    
+    from .api.search_api import search_api
+    app.register_blueprint(search_api, url_prefix="/api/search")
 
-    from .profile_api import profile_api
+    from .api.profile_api import profile_api
     app.register_blueprint(profile_api, url_prefix="/api/profile")
 
     return app
