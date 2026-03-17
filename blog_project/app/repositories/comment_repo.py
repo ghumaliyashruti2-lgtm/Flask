@@ -9,12 +9,9 @@ def save_comment(comment):
 def get_all_comments():
     return Comment.query.all()
 
-
-def get_comments_by_post(post_id):
-
-    return Comment.query.filter_by(
-        post_id=post_id,
-    ).all()
+def get_comments_by_post(post_id, page, per_page):
+    return Comment.query.filter_by(post_id=post_id)\
+        .paginate(page=page, per_page=per_page, error_out=False)
 
 
 def get_comment_by_id(comment_id):

@@ -36,10 +36,14 @@ def reply(post_id):
     return jsonify(result), status
 
 
-@comment_api.route("/comments/postid/<int:post_id>")
+@comment_api.route("/comments/post-id/<int:post_id>")
 def get_comments(post_id):
 
-    result, status = get_post_comments(post_id)
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 5, type=int)
+
+    result, status = get_post_comments(post_id, page, per_page)
+
     return jsonify(result), status
 
 

@@ -18,7 +18,7 @@ def build_comment_tree(comments):
     for c in comments:
         comment_dict[c.id] = {
             "id": c.id,
-            "text": c.text,
+            "comment": c.text,
             "user_id": c.user_id,
             "post_id": c.post_id,
             "parent_id": c.parent_id,
@@ -133,13 +133,20 @@ def remove_comment(comment_id, user_id):
 
 
 # ✅ GET COMMENTS (NESTED ✅)
-def get_post_comments(post_id):
+def get_post_comments(post_id, page, per_page):
 
-    comments = get_comments_by_post(post_id)
+    pagination = get_comments_by_post(post_id, page, per_page)
+
+    comments = pagination.items
 
     nested_comments = build_comment_tree(comments)
 
-    return {"comments": nested_comments}, 200
+    return {
+        "comments": nested_comments,
+        "total": pagination.total,
+        "pages": pagination.pages,
+        "current_page": pagination.page
+    }, 200
 
 
 # ✅ GET ALL COMMENTS
@@ -152,7 +159,7 @@ def get_all_comments_service():
     for c in comments:
         result.append({
             "id": c.id,
-            "text": c.text,
+            "comment": c.text,
             "user_id": c.user_id,
             "post_id": c.post_id
         })

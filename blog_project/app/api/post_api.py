@@ -10,10 +10,13 @@ from ..services.post_service import (
 
 post_api = Blueprint("post_api", __name__)
 
-@post_api.route("/posts")
+@post_api.route("/posts", methods=["GET"])
 def get_posts():
 
-    result, status = get_posts_service()
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 5, type=int)
+
+    result, status = get_posts_service(page, per_page)
 
     return jsonify(result), status
 

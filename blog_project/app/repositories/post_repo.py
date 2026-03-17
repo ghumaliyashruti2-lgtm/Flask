@@ -2,9 +2,11 @@ from app.models.post_model import Post
 from app.extensions import db
 
 
-def get_all_posts():
-    return Post.query.order_by(Post.id.desc()).all()
+#def get_all_posts():
+    #return Post.query.order_by(Post.id.desc()).all()
 
+def get_all_posts(page, per_page):
+    return Post.query.order_by(Post.id.desc()).paginate(page=page, per_page=per_page, error_out=False)
 
 def get_post_by_id(post_id):
     return Post.query.get(post_id)

@@ -14,9 +14,11 @@ from ..utils.time_helper import time_ago
 
 UPLOAD_FOLDER = "app/static/images/post_images"
 
-def get_posts_service():
+def get_posts_service(page, per_page):
 
-    posts = get_all_posts()
+    posts_pagination = get_all_posts(page, per_page)
+
+    posts = posts_pagination.items
 
     data = []
 
@@ -31,7 +33,14 @@ def get_posts_service():
             "image": f"/static/images/post_images/{post.image}" if post.image else None
         })
 
-    return {"posts": data}, 200
+    return {
+        "posts": data,
+        "total": posts_pagination.total,
+        "pages": posts_pagination.pages,
+        "current_page": posts_pagination.page,
+        "has_next": posts_pagination.has_next,
+        "has_prev": posts_pagination.has_prev
+    }, 200
 
 
 
