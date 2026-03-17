@@ -38,7 +38,7 @@ def get_user_profile_service(username):
     comment_data = [
         {
             "id": c.id,
-            "text": c.text,
+            "comment": c.text,
             "post_id": c.post_id
         }
         for c in comments

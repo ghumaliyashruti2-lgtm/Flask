@@ -62,6 +62,8 @@
             class="post-image">
         {% endif %}
 
+        <p>{{ post.created_at | time_ago}} ( {{ post.created_at.strftime('%d %b %Y') }} )</p>
+
         <!-- LIKE SECTION -->
         <div class="post-actions">
 

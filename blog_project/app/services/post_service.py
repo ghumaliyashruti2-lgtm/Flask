@@ -10,6 +10,7 @@ import os
 from werkzeug.utils import secure_filename
 from app.models.post_model import Post
 from ..repositories.post_repo import save_post
+from ..utils.time_helper import time_ago
 
 UPLOAD_FOLDER = "app/static/images/post_images"
 
@@ -25,6 +26,8 @@ def get_posts_service():
             "title": post.title,
             "content": post.content,
             "user_id": post.user_id,
+            "created_at": post.created_at,
+            "time_ago": time_ago(post.created_at),
             "image": f"/static/images/post_images/{post.image}" if post.image else None
         })
 

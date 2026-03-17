@@ -1,4 +1,5 @@
 from app.extensions import db
+from datetime import datetime
 
 class Post(db.Model):
 
@@ -9,5 +10,8 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     comments = db.relationship("Comment", backref="post", cascade="all, delete")
     likes = db.relationship("Like", backref="post", cascade="all, delete")
-    
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
     

@@ -12,31 +12,31 @@ from app.services.comment_service import (
 
 comment_api = Blueprint("comment_api", __name__)
 
-@comment_api.route("/comment", methods=["POST"])
+@comment_api.route("/comment/post-id/<int:post_id>", methods=["POST"])
 @jwt_required()
-def create_comment():
+def create_comment(post_id):
 
     user_id = int(get_jwt_identity())
     data = request.get_json()
 
-    result, status = add_comment(data, user_id)
+    result, status = add_comment(post_id, data, user_id)
 
     return jsonify(result), status
 
 
-@comment_api.route("/comment/reply", methods=["POST"])
+@comment_api.route("/comment/post-id/<int:post_id>/reply", methods=["POST"])
 @jwt_required()
-def reply():
+def reply(post_id):
 
     user_id = int(get_jwt_identity())
     data = request.get_json()
 
-    result, status = reply_comment(data, user_id)
+    result, status = reply_comment(post_id, data, user_id)
 
     return jsonify(result), status
 
 
-@comment_api.route("/comments/<int:post_id>")
+@comment_api.route("/comments/postid/<int:post_id>")
 def get_comments(post_id):
 
     result, status = get_post_comments(post_id)

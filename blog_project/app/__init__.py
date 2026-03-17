@@ -2,6 +2,7 @@ from flask import Flask
 from .config import Config
 from .extensions import db, login_manager, mail, jwt, jwt_blacklist
 from .models.user_model import User
+from .utils.time_helper import time_ago
 
 def create_app():
 
@@ -9,6 +10,7 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    app.jinja_env.filters['time_ago'] = time_ago
 
     login_manager.init_app(app)
     login_manager.login_view = "main.login"

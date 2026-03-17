@@ -1,4 +1,5 @@
 from app.models.comment_model import Comment
+from app.models.post_model import Post
 from app.repositories.comment_repo import (
     save_comment,
     get_comments_by_post,
@@ -8,13 +9,18 @@ from app.repositories.comment_repo import (
     get_all_comments
 )
 
-def add_comment(data, user_id):
+# ✅ ADD COMMENT (POST ID FROM URL)
+def add_comment(post_id, data, user_id):
 
     text = data.get("text")
-    post_id = data.get("post_id")
 
     if not text:
         return {"error": "Comment cannot be empty"}, 400
+
+    # ✅ check post exists
+    post = Post.query.get(post_id)
+    if not post:
+        return {"error": "Post not found"}, 404
 
     comment = Comment(
         text=text,
@@ -26,21 +32,31 @@ def add_comment(data, user_id):
 
     return {"message": "Comment added"}, 201
 
-def reply_comment(data, user_id):
+
+
+def reply_comment(post_id, data, user_id):
 
     text = data.get("text")
-    post_id = data.get("post_id")
+    parent_id = data.get("parent_id")
 
-    reply = Comment(
+    if not text:
+        return {"error": "Reply cannot be empty"}, 400
+
+    if not parent_id:
+        return {"error": "parent_id required"}, 400
+
+    comment = Comment(
         text=text,
         user_id=user_id,
         post_id=post_id,
-        
+        parent_id=parent_id
     )
 
-    save_comment(reply)
+    save_comment(comment)
 
     return {"message": "Reply added"}, 201
+
+
 
 def edit_comment(comment_id, data, user_id):
 
