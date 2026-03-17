@@ -10,3 +10,12 @@ class Comment(db.Model):
 
     post_id = db.Column(db.Integer, db.ForeignKey("post.id"))    
     
+    # ✅ NESTED COMMENT
+    parent_id = db.Column(db.Integer, db.ForeignKey('comment.id'), nullable=True)
+
+    # relationship for replies
+    replies = db.relationship(
+        'Comment',
+        backref=db.backref('parent', remote_side=[id]),
+        lazy=True
+    )
