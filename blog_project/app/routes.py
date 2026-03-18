@@ -3,6 +3,7 @@ from app.models.user_model import User
 from app.models.like_model import Like
 from app.models.post_model import Post
 from app.models.comment_model import Comment
+from app.models.notification_model import Notification
 from . import db
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -416,9 +417,19 @@ def home():
 def home():
     # this show all user post its used when user have comment in post .
     posts = Post.query.all()
+    
+    notifications = Notification.query.filter_by(
+        user_id=current_user.id
+    ).order_by(Notification.created_at.desc()).limit(5).all()
+
+    unread_count = Notification.query.filter_by(
+        user_id=current_user.id,
+        is_read=False
+    ).count()
     # this show only user own post 
     # posts = Post.query.filter_by(author=current_user).all()
-    return render_template("index.html", posts=posts)
+    return render_template("index.html", posts=posts, notifications=notifications,
+        unread_count=unread_count)
 
 # ===============
 # ADD  POST 
@@ -711,3 +722,22 @@ def search():
         comments=matched_comments,
         query=query
     )
+    
+    
+# =================
+# NOTIFICATION 
+# ================    
+@main.route("/notifications")
+@login_required
+def notifications():
+
+    notifications = Notification.query.filter_by(
+        user_id=current_user.id
+    ).order_by(Notification.created_at.desc()).all()
+    
+    unread_count = Notification.query.filter_by(
+        user_id=current_user.id,
+        is_read=False
+    ).count()
+
+    return render_template("notification.html", notifications=notifications,unread_count=unread_count)

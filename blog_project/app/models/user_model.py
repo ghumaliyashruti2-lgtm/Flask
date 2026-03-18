@@ -21,3 +21,18 @@ class User(db.Model, UserMixin):
     likes = db.relationship("Like", backref="author", lazy="select",cascade="all, delete")
      # backref="author" means its connection between post and user bakcref is used for automatic reverse connection post->user and user->post access.
     
+    
+    # 🔔 ADD THIS
+    received_notifications = db.relationship(
+        "Notification",
+        foreign_keys="Notification.user_id",
+        back_populates="receiver",
+        cascade="all, delete"
+    )
+
+    sent_notifications = db.relationship(
+        "Notification",
+        foreign_keys="Notification.sender_id",
+        back_populates="sender",
+        cascade="all, delete"
+    )

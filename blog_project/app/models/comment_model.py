@@ -19,3 +19,4 @@ class Comment(db.Model):
         backref=db.backref('parent', remote_side=[id]),
         lazy=True
     )
+    

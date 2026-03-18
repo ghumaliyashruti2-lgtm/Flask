@@ -3,6 +3,9 @@ from .config import Config
 from .extensions import db, login_manager, mail, jwt, jwt_blacklist
 from .models.user_model import User
 from .utils.time_helper import time_ago
+from flask_migrate import Migrate
+
+migrate =Migrate()
 
 def create_app():
 
@@ -17,6 +20,7 @@ def create_app():
 
     mail.init_app(app)
     jwt.init_app(app)
+    migrate.init_app(app,db)
 
     @login_manager.user_loader
     def load_user(user_id):
@@ -56,5 +60,8 @@ def create_app():
 
     from .api.profile_api import profile_api
     app.register_blueprint(profile_api, url_prefix="/api/profile")
+    
+    from .api.notification_api import notification_api
+    app.register_blueprint(notification_api, url_prefix="/api/notification")
 
     return app

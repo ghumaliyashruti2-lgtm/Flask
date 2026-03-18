@@ -8,6 +8,7 @@ from app.repositories.comment_repo import (
     update_comment,
     get_all_comments
 )
+from app.services.notification_service import create_notification
 
 # ✅ HELPER: BUILD NESTED TREE
 def build_comment_tree(comments):
@@ -56,6 +57,14 @@ def add_comment(post_id, data, user_id):
     )
 
     save_comment(comment)
+    if post.user_id != user_id:
+        create_notification(
+            user_id=post.user_id,   # User2 (Diya) → receiver
+            sender_id=user_id,      # User1 (Vidhi) → sender
+            type="comment",
+            post_id=post_id,
+            comment_id=comment.id
+        )
 
     return {"message": "Comment added"}, 201
 
@@ -82,6 +91,15 @@ def reply_comment(post_id, data, user_id):
     )
 
     save_comment(comment)
+    
+    if parent.user_id != user_id:
+        create_notification(
+            user_id=parent.user_id,   # 👈 Vidhi (comment owner)
+            sender_id=user_id,        # 👈 Shruti (replier)
+            type="reply",
+            post_id=post_id,
+            comment_id=comment.id    # ✅ USE NEW COMMENT (IMPORTANT)
+        )
 
     return {"message": "Reply added"}, 201
 
