@@ -8,83 +8,73 @@
     <!-- ❤️ LIKE -->
     {% if n.type == "like" %}
 
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:-15px;">
             <img 
                 src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
-                width="40" height="40"
+                width="30" height="30"
                 style="border-radius:50%; object-fit:cover;"
             >
-            <b>{{ n.sender.username }}'s</b> Like:
+            {{ n.sender.username }} liked your post 
+            {% if n.post and n.post.image %}
+                <a href="{{ url_for('main.like_post', post_id=n.post_id) }}">
+                    <img 
+                        src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
+                        width="40" height="40"
+                        style="margin-top:8px;margin-left:20px;"
+                    >
+                </a>
+            {% endif %}
         </div>
-        <hr>
-
-        {% if n.post and n.post.image %}
-            <a href="{{ url_for('main.like_post', post_id=n.post_id) }}">
-                <img 
-                    src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
-                    width="120"
-                    style="margin-top:8px; border-radius:8px;margin-left:20px;"
-                >
-            </a>
-        {% endif %}
-
-        <div style="margin-left:20px; margin-top:10px;">
-            {{ n.sender.username }} liked your post ❤️
-        </div>
+        
 
     <!-- 💬 COMMENT -->
     {% elif n.type == "comment" %}
 
-        <div style="display:flex; align-items:center; gap:10px;">
-            <img 
-                src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
-                width="40" height="40"
-                style="border-radius:50%; object-fit:cover;"
-            >
-            <b>{{ n.sender.username }}'s</b> Comments:
-        </div>
-        <hr>
-
         {% if n.post and n.post.image %}
-            <a href="{{ url_for('main.like_post', post_id=n.post_id) }}">
-                <img 
-                    src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
-                    width="120"
-                    style="margin-top:8px; border-radius:8px; margin-left:20px;"
-                >
+            <a href="{{ url_for('main.like_post', post_id=n.post_id) }}" style="text-decoration:none; color:black;">
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img 
+                        src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
+                        width="30" height="30"
+                        style="border-radius:50%; object-fit:cover;"
+                    >
+                    <div>{{ n.sender.username }} </div>
+                </div>
+                <div style="font-size:14px; margin-left:40px;">
+                    Comment You: "{{ n.comment.text }}"
+                    <img 
+                        src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
+                        width="40" height="40" style="position:absolute;margin-top:-10px; margin-left:20px;" >
+                </div>
             </a>
         {% endif %}
-            
-        <div style="margin-left:20px; margin-top:10px;">
-            {{ n.sender.username }} :
-            <b>"{{ n.comment.text }}"</b>
-        </div>  
+        
+
 
     <!-- 🔁 REPLY -->
     {% elif n.type == "reply" %}
 
-        <div style="margin-left:10px;">
-            
-            {% if n.comment.parent %}
-                <div style="color:gray;margin-left:10px;">
-                    {{ n.comment.parent.author.username }}: 
-                    "{{ n.comment.parent.text }}"
+        {% if n.post and n.post.image %}
+            <a href="{{ url_for('main.like_post', post_id=n.post_id) }}" style="text-decoration:none; color:black;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <img 
+                        src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
+                        width="30" height="30"
+                        style="border-radius:50%; object-fit:cover;"
+                    >
+                    <div>{{ n.sender.username }} </div>
                 </div>
-            {% endif %}
-
-            <div style="margin-left:10px;">
-                {{ n.sender.username }}: 
-                <b>"{{ n.comment.text }}"</b>
-            </div>
-
-        </div>
+                <div style="font-size:14px; margin-left:40px;">
+                    Reply You: "{{ n.comment.text }}"
+                </div>
+            </a>
+        {% endif %}
 
     {% endif %}
 
     <!-- ⏰ TIME -->
-    <div style="margin-top:5px; color:black; font-size:12px; margin-left:20px;">
-        <b>{{ n.created_at | time_ago }}
-        ({{ n.created_at.strftime('%d %b %Y') }})</b>
+    <div style="margin-top:5px; color:grey; font-size:12px; margin-left:40px;">
+        <b>{{ n.created_at | time_ago }}</b>
     </div>
 
 </div>

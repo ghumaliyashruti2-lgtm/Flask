@@ -10,9 +10,6 @@ class Notification(db.Model):
     sender_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     type = db.Column(db.String(50))
-    
-    post_id = db.Column(db.Integer, nullable=True)
-    comment_id = db.Column(db.Integer, nullable=True)
 
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

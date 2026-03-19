@@ -1,3 +1,4 @@
+from app import db
 from app.models.comment_model import Comment
 from app.models.post_model import Post
 from app.repositories.comment_repo import (
@@ -9,6 +10,7 @@ from app.repositories.comment_repo import (
     get_all_comments
 )
 from app.services.notification_service import create_notification
+from app.models.notification_model import Notification
 
 # ✅ HELPER: BUILD NESTED TREE
 def build_comment_tree(comments):
@@ -135,19 +137,25 @@ def delete_with_replies(comment):
     delete_comment(comment)
 
 
+from app.models.notification_model import Notification
+
 def remove_comment(comment_id, user_id):
 
-    comment = get_comment_by_id(comment_id)
+    comment = Comment.query.get(comment_id)
 
     if not comment:
-        return {"error": "Comment not found"}, 404
+        return {"msg": "Comment not found"}, 404
 
     if comment.user_id != user_id:
-        return {"error": "Unauthorized"}, 403
+        return {"msg": "Unauthorized"}, 403
 
-    delete_with_replies(comment)   # ✅ IMPORTANT
+    # 🔥 DELETE RELATED NOTIFICATIONS
+    Notification.query.filter_by(comment_id=comment_id).delete()
 
-    return {"message": "Comment deleted"}, 200
+    db.session.delete(comment)
+    db.session.commit()
+
+    return {"msg": "Comment deleted"}, 200
 
 
 # ✅ GET COMMENTS (NESTED ✅)

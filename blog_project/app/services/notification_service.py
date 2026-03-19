@@ -15,3 +15,18 @@ def create_notification(user_id, sender_id, type, post_id=None, comment_id=None)
 
     db.session.add(notification)
     db.session.commit()
+    
+    
+def delete_notification(notification_id, user_id):
+    notification = Notification.query.get(notification_id)
+
+    if not notification:
+        return {"msg": "Notification not found"}, 404
+
+    if notification.user_id != int(user_id):
+        return {"msg": "Unauthorized"}, 403
+
+    db.session.delete(notification)
+    db.session.commit()
+
+    return {"msg": "Notification deleted"}, 200
