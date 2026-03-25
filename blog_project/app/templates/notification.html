@@ -58,10 +58,64 @@
                     </div>
                 </a>
             {% endif %}
+
+        {% elif n.type == "follow_request" %}
+
+            <div style="display:flex; align-items:center; gap:10px;">
+                <img 
+                    src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
+                    width="30" height="30"
+                    style="border-radius:50%; object-fit:cover;"
+                >
+                <div>
+                    <b>{{ n.sender.username }}</b> wants to follow you
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div style="margin-left:40px; margin-top:5px;">
+
+                <a href="{{ url_for('main.accept_request', id=n.id) }}">
+                    <button style="background:green; color:white; border:none; padding:5px 10px; border-radius:5px;">
+                        Accept
+                    </button>
+                </a>
+
+                <a href="{{ url_for('main.reject_request', id=n.id) }}">
+                    <button style="background:red; color:white; border:none; padding:5px 10px; border-radius:5px;">
+                        Reject
+                    </button>
+                </a>
+
+            </div>
             
 
+        
+            {% elif n.type == "new_post" %}
 
-        <!-- 🔁 REPLY 
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <img 
+                        src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
+                        width="30" height="30"
+                        style="border-radius:50%; object-fit:cover;"
+                    >
+
+                    <div>
+                        <b>{{ n.sender.username }}</b> uploaded a new post
+                    </div>
+
+                    {% if n.post and n.post.image %}
+                        <a href="{{ url_for('main.home') }}#post-{{ n.post_id }}">
+                            <img 
+                                src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
+                                width="40" height="40"
+                            >
+                        </a>
+                    {% endif %}
+                </div>
+
+        
+            <!-- 🔁 REPLY 
         {% elif n.type == "reply" %}
 
             {% if n.post and n.post.image %}

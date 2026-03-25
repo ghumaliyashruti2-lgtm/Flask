@@ -7,6 +7,7 @@ class Post(db.Model):
     title = db.Column(db.String(200))
     content = db.Column(db.Text)
     image = db.Column(db.String(200))
+    is_private = db.Column(db.Boolean, default=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     comments = db.relationship("Comment", backref="post", cascade="all, delete")
     likes = db.relationship("Like", backref="post", cascade="all, delete")

@@ -17,9 +17,26 @@
                 <h2>{{ user.username }}</h2>
                 
                 {% if current_user.id != user.id %}
-                <div class="follow-btn">
-                    <button type="submit">follow</button>
-                </div>
+
+                    <div class="follow-btn">
+
+                        {% if not follow %}
+                            <a href="{{ url_for('main.follow_user', user_id=user.id) }}">
+                                <button>Follow</button>
+                            </a>
+
+                        {% elif follow.status == "pending" %}
+                            <button disabled>Requested</button>
+
+                        {% elif follow.status == "accepted" %}
+                            <a href="{{ url_for('main.unfollow', user_id=user.id) }}">
+                                <button>Unfollow</button>
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
                 {% endif %}
             </div>
 
@@ -32,7 +49,7 @@
             
 
             {% if current_user.id == user.id %}
-            <!--<div class="profile-actions">
+            <!-- <div class="profile-actions">
                 <form action="{{ url_for('main.upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
                     <input type="file" name="profile_pic" required>
                     <br>
@@ -52,21 +69,32 @@
     <div class="profile-posts">
         <div class="section-title">Posts</div>
 
-        <div class="posts-grid">
-            {% for post in posts %}
-                <div class="post-item">
-                    {% if post.image %}
-                    <a href="{{ url_for('main.home') }}#post-{{ post.id }}">
-                        <img 
-                            src="{{ url_for('static', filename='images/post_images/' + post.image) }}" 
-                            class="profile-post-image"
-                            alt="Post Image"
-                        >
-                    </a>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
+        {% if current_user.id == user.id or (follow and follow.status == "accepted") %}
+
+            <!-- ✅ SHOW POSTS -->
+            <div class="posts-grid">
+                {% for post in posts %}
+                    <div class="post-item">
+                        {% if post.image %}
+                            <a href="{{ url_for('main.home') }}#post-{{ post.id }}">
+                                <img 
+                                    src="{{ url_for('static', filename='images/post_images/' + post.image) }}" 
+                                    class="profile-post-image"
+                                >
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+        {% else %}
+
+            <!-- 🔒 PRIVATE -->
+            <div class="private-msg">
+                <p>🔒 This account is private</p>
+            </div>
+
+        {% endif %}
     </div>
 
 </div>

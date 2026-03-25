@@ -5,6 +5,7 @@ from app.models.post_model import Post
 from app.models.comment_model import Comment
 from app.models.notification_model import Notification
 from app.services.notification_service import create_notification
+from app.models.follow_model import Follow
 from . import db
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -413,7 +414,7 @@ def home():
 #  ALL POST IN ONE PAGE 
 # =======================
 
-@main.route("/")
+'''@main.route("/")
 @login_required
 def home():
     # this show all user post its used when user have comment in post .
@@ -430,7 +431,44 @@ def home():
     # this show only user own post 
     # posts = Post.query.filter_by(author=current_user).all()
     return render_template("index.html", posts=posts, notifications=notifications,
-        unread_count=unread_count)
+        unread_count=unread_count)'''
+    
+# =======================
+# FOLLOW DATA IN BACKEND 
+# =======================
+
+@main.route("/")
+@login_required
+def home():
+
+    all_posts = Post.query.order_by(Post.created_at.desc())
+
+    user_follows = Follow.query.filter_by(
+        follower_id=current_user.id
+    ).all()
+
+    follows_dict = {
+        f.following_id: f for f in user_follows
+    }
+
+    visible_posts = []
+
+    for post in all_posts:
+
+        follow = follows_dict.get(post.user_id)
+
+        if (
+            not post.is_private
+            or (follow and follow.status == "accepted")
+            or post.user_id == current_user.id
+        ):
+            visible_posts.append(post)
+
+    return render_template(
+        "index.html",
+        posts=visible_posts,
+        follows=follows_dict
+    )
 
 # ===============
 # ADD  POST 
@@ -444,6 +482,10 @@ def add_post():
         title = request.form.get("title")
         content = request.form.get("content")
 
+        privacy = request.form.get("privacy")
+
+        is_private = True if privacy == "private" else False
+        
         # get image file 
         file = request.files.get("image")
         filename = None
@@ -470,11 +512,27 @@ def add_post():
             title=title,
             content=content,
             image=filename,
-            user_id=current_user.id
+            user_id=current_user.id,
+            is_private=is_private
         )
 
         db.session.add(post)
         db.session.commit()
+        
+        # get all followers (accepted only)
+        followers = Follow.query.filter_by(
+            following_id=current_user.id,
+            status="accepted"
+        ).all()
+
+        # send notification to each follower
+        for f in followers:
+            create_notification(
+                user_id=f.follower_id,   # receiver
+                sender_id=current_user.id,
+                type="new_post",
+                post_id=post.id
+            )
 
         flash("Post created successfully", "success")
         return redirect(url_for("main.home"))
@@ -530,7 +588,7 @@ def delete_post(id):
 # PROFILE 
 # ====================
 
-@main.route("/user/<username>")
+'''@main.route("/user/<username>")
 def user_profile(username):
 
     user = User.query.filter_by(username=username).first_or_404()
@@ -546,7 +604,52 @@ def user_profile(username):
     likes = Like.query.filter_by(user_id=user.id).all()
 
    
-    return render_template("profile.html", user=user, posts=posts , comments=comments , likes=likes)
+    return render_template("profile.html", user=user, posts=posts , comments=comments , likes=likes)'''
+
+
+@main.route("/user/<username>")
+@login_required
+def user_profile(username):
+
+    user = User.query.filter_by(username=username).first_or_404()
+
+    # ✅ Always get follow (important fix)
+    follow = Follow.query.filter_by(
+        follower_id=current_user.id,
+        following_id=user.id
+    ).first()
+
+    # ✅ Owner check
+    is_owner = current_user.id == user.id
+
+    # ✅ Following check
+    is_following = False
+    if follow and follow.status == "accepted":
+        is_following = True
+
+    # ✅ Get posts
+    posts = Post.query.filter_by(user_id=user.id).all()
+
+    # 🔒 Apply privacy logic
+    if not is_owner:
+        # show only public posts OR if following accepted
+        if not is_following:
+            posts = [p for p in posts if not p.is_private]
+
+    # other data
+    comments = Comment.query.filter_by(user_id=user.id).all()
+    likes = Like.query.filter_by(user_id=user.id).all()
+
+    return render_template(
+        "profile.html",
+        user=user,
+        posts=posts,
+        comments=comments,
+        likes=likes,
+        follow=follow,
+        is_owner=is_owner,
+        is_following=is_following
+    )
 
 # ==========================
 # UPLOAD PROFILE PICTURE 
@@ -647,6 +750,17 @@ def like_post(post_id):
             type="like",
             post_id=post_id
         )
+        
+    if post.user_id != current_user.id:
+        follow = Follow.query.filter_by(
+            follower_id=current_user.id,
+            following_id=post.user_id,
+            status="accepted"
+        ).first()
+
+    if not follow:
+        flash("Follow user to like posts")
+        return redirect("/")
 
     db.session.commit()
 
@@ -835,11 +949,10 @@ def edit_comment(id):
 def notifications():
 
     notifications = Notification.query.filter_by(
-        user_id=current_user.id,
-        is_read=False
+        user_id=current_user.id
     ).order_by(Notification.created_at.desc()).all()
 
-    # ✅ MARK ALL AS READ
+    # ✅ mark all as read
     Notification.query.filter_by(
         user_id=current_user.id,
         is_read=False
@@ -847,7 +960,7 @@ def notifications():
 
     db.session.commit()
 
-    unread_count = 0  # now all are read
+    unread_count = 0
 
     return render_template(
         "notification.html",
@@ -855,7 +968,9 @@ def notifications():
         unread_count=unread_count
     )
     
-    
+# ========================-
+# READ NOTIFICATION
+# =========================    
 @main.route("/read-notification/<int:id>")
 @login_required
 def read_notification(id):
@@ -876,7 +991,7 @@ def read_notification(id):
 
 
 # =================
-# comment 
+# COMMENT LIST
 # ================    
 @main.route("/comments/<int:post_id>")
 @login_required
@@ -893,6 +1008,10 @@ def comments(post_id):
     users = User.query.filter(User.id.in_(user_ids)).all()
 
     return render_template("comment_list.html", post=post, users=users)
+
+# =================
+# COMMENT 
+# ================  
 
 @main.route("/comment/<int:post_id>/<int:user_id>")
 @login_required
@@ -912,6 +1031,9 @@ def comment(post_id, user_id):
     
     return render_template("comment.html", comments=comments, post=post, user_id=user_id,user=user)
 
+# =============
+# UNREAD 
+# =============
 @main.app_context_processor
 def inject_unread_count():
     if current_user.is_authenticated:
@@ -923,3 +1045,104 @@ def inject_unread_count():
         unread_count = 0
 
     return dict(unread_count=unread_count)
+
+# ====================
+# FOLLOW
+# ====================
+from app.services.notification_service import create_notification
+
+@main.route("/follow/<int:user_id>")
+@login_required
+def follow_user(user_id):
+
+    if user_id == current_user.id:
+        return redirect("/")
+
+    existing = Follow.query.filter_by(
+        follower_id=current_user.id,
+        following_id=user_id
+    ).first()
+
+    if not existing:
+        follow = Follow(
+            follower_id=current_user.id,
+            following_id=user_id,
+            status="pending"
+        )
+        db.session.add(follow)
+        db.session.commit()
+
+        # 🔥 SEND NOTIFICATION
+        create_notification(
+            user_id=user_id,          # receiver
+            sender_id=current_user.id,
+            type="follow_request"
+        )
+
+    return redirect(request.referrer)
+
+# ====================
+# FOLLOW REQUEST
+# ====================
+@main.route("/accept/<int:id>")
+@login_required
+def accept_request(id):
+
+    notification = Notification.query.get_or_404(id)
+
+    follow = Follow.query.filter_by(
+        follower_id=notification.sender_id,
+        following_id=current_user.id
+    ).first()
+
+    if follow:
+        follow.status = "accepted"
+
+    notification.is_read = True  # mark read
+
+    db.session.commit()
+
+    return redirect("/notifications")
+
+
+# ======================
+# REJECT REQUEST
+# ======================
+@main.route("/reject/<int:id>")
+@login_required
+def reject_request(id):
+
+    notification = Notification.query.get_or_404(id)
+
+    follow = Follow.query.filter_by(
+        follower_id=notification.sender_id,
+        following_id=current_user.id
+    ).first()
+
+    if follow:
+        db.session.delete(follow)
+
+    db.session.delete(notification)
+
+    db.session.commit()
+
+    return redirect("/notifications")
+
+# ======================
+# UNFOLLOW REQUEST
+# ======================
+
+@main.route("/unfollow/<int:user_id>")
+@login_required
+def unfollow(user_id):
+
+    follow = Follow.query.filter_by(
+        follower_id=current_user.id,
+        following_id=user_id
+    ).first()
+
+    if follow:
+        db.session.delete(follow)
+        db.session.commit()
+
+    return redirect(request.referrer)

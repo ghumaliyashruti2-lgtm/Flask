@@ -3,95 +3,122 @@
 {% block content %}
 
 {% for post in posts %}
+    {% set follow = follows.get(post.user_id) %}
 
-<div class="post-card">
+    {% if not post.is_private 
+        or (follow and follow.status == "accepted") 
+        or post.user_id == current_user.id %}
 
-    <!-- POST HEADER -->
-    
-    <div class="post-header">
-        <a href="{{ url_for('main.user_profile',username=post.author.username) }}" class="user-link">
-            <img 
-            src="{{ url_for('static', filename='images/profile_picture/' + post.author.profile_pic) }}"
-            class="profile-img">
+        <div class="post-card">
+
+            <!-- POST HEADER -->
+            
+            <div class="post-header">
+                <a href="{{ url_for('main.user_profile',username=post.author.username) }}" class="user-link">
+                    <img 
+                    src="{{ url_for('static', filename='images/profile_picture/' + post.author.profile_pic) }}"
+                    class="profile-img">
+
+                    
+                    <div class="username">{{ post.author.username }}</div> 
+                </a>
 
             
-            <div class="username">{{ post.author.username }}</div> 
-        </a>
+                {% if post.user_id == current_user.id %}
+            
+                    <div class="menu-container">
 
-    
-        {% if post.user_id == current_user.id %}
-    
-            <div class="menu-container">
+                        <i class="fa fa-ellipsis-v menu-icon"></i>
 
-                <i class="fa fa-ellipsis-v menu-icon"></i>
+                        <div class="menu-dropdown">
 
-                <div class="menu-dropdown">
+                            {% if post.author == current_user %}
+                            <a href="{{ url_for('main.edit_post', id=post.id) }}">
+                                <i class="fa fa-edit"></i> Edit
+                            </a>
 
-                    {% if post.author == current_user %}
-                    <a href="{{ url_for('main.edit_post', id=post.id) }}">
-                        <i class="fa fa-edit"></i> Edit
-                    </a>
+                            <a href="{{ url_for('main.delete_post', id=post.id) }}">
+                                <i class="fa fa-trash"></i> Delete
+                            </a>
+                            {% endif %}
 
-                    <a href="{{ url_for('main.delete_post', id=post.id) }}">
-                        <i class="fa fa-trash"></i> Delete
-                    </a>
+                        </div>
+
+                    </div>
+                {% endif %}
+                {% if post.user_id != current_user.id %}
+                    {% if post.user_id != current_user.id %}
+
+                        {% set follow = follows.get(post.user_id) %}
+
+                        <div class="follow-btn">
+
+                            {% if not follow %}
+                                <a href="{{ url_for('main.follow_user', user_id=post.user_id) }}">
+                                    <button>Follow</button>
+                                </a>
+
+                            {% elif follow.status == "pending" %}
+                                <button disabled>Requested</button>
+
+                            {% elif follow.status == "accepted" %}
+                                <a href="{{ url_for('main.unfollow', user_id=post.user_id) }}">
+                                    <button>Unfollow</button>
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
                     {% endif %}
+                {% endif %}
 
+            </div>
+            
+            <div class="post-body" id="post-{{ post.id }}">
+                
+                <!-- POST IMAGE -->
+                {% if post.image %}
+                    <img 
+                    src="{{ url_for('static', filename='images/post_images/' + post.image) }}" 
+                    class="post-image">
+                {% endif %}
+
+                <!-- POST CONTENT -->
+                <div class="post-content">
+                    {{ post.content }}
+                    <div style="font-size:12px; color:grey; margin-top:5px; margin-left:6%;">
+                        {{ post.created_at | time_ago}}
+                    </div>
                 </div>
 
-            </div>
-        {% endif %}
-        {% if post.user_id != current_user.id %}
-            <div class="follow-btn"> 
-                <button type="submit">follow</button>
-            </div>
-        {% endif %}
-
-    </div>
-    
-    <div class="post-body" id="post-{{ post.id }}">
-        
-        <!-- POST IMAGE -->
-        {% if post.image %}
-            <img 
-            src="{{ url_for('static', filename='images/post_images/' + post.image) }}" 
-            class="post-image">
-        {% endif %}
-
-        <!-- POST CONTENT -->
-        <div class="post-content">
-            {{ post.content }}
-            <div style="font-size:12px; color:grey; margin-top:5px; margin-left:6%;">
-                {{ post.created_at | time_ago}}
-            </div>
-        </div>
-
-        <!-- LIKE SECTION -->
-        <div class="post-actions">
-            <a href="{{ url_for('main.like_post', post_id=post.id) }}">
-            ❤️ {{ post.likes|length }} 
-            </a>
-
-            <!-- COMMENTS -->
-
-                <div class="comment-box">
-                    {% if post.user_id == current_user.id %}
-                        <a href="{{ url_for('main.comments', post_id=post.id) }}">
-                            💭
-                        </a>
-                    {% else %}
-                        <a href="{{ url_for('main.comment', post_id=post.id,user_id=post.user_id) }}">
-                        💭 
+                <!-- LIKE SECTION -->
+                <div class="post-actions">
+                    <a href="{{ url_for('main.like_post', post_id=post.id) }}">
+                    ❤️ {{ post.likes|length }} 
                     </a>
-                    {% endif %}
+
+                    <!-- COMMENTS -->
+
+                        <div class="comment-box">
+                            {% if post.user_id == current_user.id %}
+                                <a href="{{ url_for('main.comments', post_id=post.id) }}">
+                                    💭
+                                </a>
+                            {% else %}
+                                <a href="{{ url_for('main.comment', post_id=post.id,user_id=post.user_id) }}">
+                                💭 
+                            </a>
+                            {% endif %}
+                        </div>
+
+                    </div>
                 </div>
+                
 
             </div>
-        </div>
-        
-
-    </div>
-</div>    
+        </div>    
+    {% endif %}
 
 {% endfor %}
 
