@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="chat-container">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+        <div class="user-info">
+            <img src="{{ url_for('static', filename='images/profile_picture/' + user.profile_pic) }}" width="30" height="30"
+            style="border-radius:50%; object-fit:cover;">
+            <div>
+                <div class="name">{{ user.username }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHAT BODY -->
+    <div class="chat-body">
+
+        {% for comment in comments %}
+
+            {% if comment.user_id == current_user.id %}
+                <div class="message right">
+                    <div class="msg-box user-msg">
+                        {{ comment.text }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="message left">
+                    <div class="msg-box">
+                        {{ comment.text }}
+                    </div>
+                </div>
+            {% endif %}
+
+        {% endfor %}
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="chat-footer">
+        <form action="{{ url_for('main.add_comment', post_id=post.id) }}" method="POST">
+            <input type="text" name="comment" placeholder="Write comment..." required>
+            <input type="hidden" name="target_user_id" value="{{ user.id }}">
+            <button type="submit">➤</button>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}

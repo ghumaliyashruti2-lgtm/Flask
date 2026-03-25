@@ -58,15 +58,3 @@ def mark_as_read(id):
     db.session.commit()
 
     return {"msg": "Marked as read"}
-
-from app.services.notification_service import delete_notification
-
-@notification_api.route("/notifications/<int:id>", methods=["DELETE"])
-@jwt_required()
-def delete_notification_api(id):
-
-    user_id = get_jwt_identity()
-
-    result, status = delete_notification(id, user_id)
-
-    return jsonify(result), status

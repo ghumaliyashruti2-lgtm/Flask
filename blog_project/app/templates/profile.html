@@ -2,66 +2,73 @@
 
 {% block content %}
 
-<h2>{{ user.username }}</h2>
+<div class="profile-page">
 
-<img 
-src="{{ url_for('static', filename='images/profile_picture/' + user.profile_pic) }}" 
-width="120"
-height="120"
-style="border-radius:50%; object-fit:cover;"
->
+    <div class="profile-header">
+        <div class="profile-image">
+            <img 
+                src="{{ url_for('static', filename='images/profile_picture/' + user.profile_pic) }}" 
+                alt="Profile Picture"
+            >
+        </div>
 
-{% if current_user.id == user.id %}
+        <div class="profile-info">
+            <div class="profile-top">
+                <h2>{{ user.username }}</h2>
+                
+                {% if current_user.id != user.id %}
+                <div class="follow-btn">
+                    <button type="submit">follow</button>
+                </div>
+                {% endif %}
+            </div>
 
-<form action="{{ url_for('main.upload_profile_pic') }}" 
-method="POST" 
-enctype="multipart/form-data">
+            <div class="profile-stats">
+                <div><strong>{{ posts|length }}</strong> posts</div>
+                <div><strong>{{ comments|length }}</strong> comments</div>
+                <div><strong>{{ likes|length }}</strong> likes</div>
+            </div>
 
-<input type="file" name="profile_pic" required>
+            
 
-<button type="submit">Upload Profile Picture</button>
+            {% if current_user.id == user.id %}
+            <!--<div class="profile-actions">
+                <form action="{{ url_for('main.upload_profile_pic') }}" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="profile_pic" required>
+                    <br>
+                    <button class="profile-btn" type="submit">Upload Profile Picture</button>
+                </form>
 
-</form>
+                <form action="{{ url_for('main.delete_profile_image') }}" method="POST">
+                    <button class="profile-btn" type="submit" onclick="return confirm('Are you sure you want to delete profile image?')">
+                        Delete Image
+                    </button>
+                </form>
+            </div>-->
+            {% endif %}
+        </div>
+    </div>
 
-<form action="{{ url_for('main.delete_profile_image') }}" method="POST">
-    <button onclick="return confirm('Are you sure you want to delete profile image?')">
-        Delete Image
-    </button>
-</form>
+    <div class="profile-posts">
+        <div class="section-title">Posts</div>
 
-{% endif %}
+        <div class="posts-grid">
+            {% for post in posts %}
+                <div class="post-item">
+                    {% if post.image %}
+                    <a href="{{ url_for('main.home') }}#post-{{ post.id }}">
+                        <img 
+                            src="{{ url_for('static', filename='images/post_images/' + post.image) }}" 
+                            class="profile-post-image"
+                            alt="Post Image"
+                        >
+                    </a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 
-<h1>{{ user.username }}'s Profile</h1>
-
-<p>Total Posts : {{ posts|length }}</p>
-<p>Total Comments : {{ comments|length }}</p>
-<p>Total Likes : {{ likes|length }}</p>
-
-<hr>
-
-<h3>Posts</h3>
-
-    {% for post in posts %}
-
-    <h3>{{ post.title }}</h3>
-    <p>{{ post.content }}</p>
-
-    {% else %}
-
-    <p>No posts yet.</p>
-
-    {% endfor %}
-
-<h3>Comment:</h3>
-
-    {% for comment in comments %}
-
-    <p><b>{{user.username}} : </b>{{comment.text}}</p>
-
-    {% else %}
-
-    <p>No Comment yet.</p>
-
-    {% endfor%}
+</div>
 
 {% endblock %}

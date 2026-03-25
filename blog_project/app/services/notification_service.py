@@ -10,12 +10,12 @@ def create_notification(user_id, sender_id, type, post_id=None, comment_id=None)
         sender_id=sender_id,   # who performed action
         type=type,
         post_id=post_id,
-        comment_id=comment_id
+        comment_id=comment_id,
+        is_read=False
     )
 
     db.session.add(notification)
     db.session.commit()
-    
     
 def delete_notification(notification_id, user_id):
     notification = Notification.query.get(notification_id)

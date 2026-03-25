@@ -4,6 +4,7 @@ from app.models.like_model import Like
 from app.models.post_model import Post
 from app.models.comment_model import Comment
 from app.models.notification_model import Notification
+from app.services.notification_service import create_notification
 from . import db
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -416,7 +417,7 @@ def home():
 @login_required
 def home():
     # this show all user post its used when user have comment in post .
-    posts = Post.query.all()
+    posts = Post.query.order_by(Post.created_at.desc()).all()
     
     notifications = Notification.query.filter_by(
         user_id=current_user.id
@@ -534,7 +535,9 @@ def user_profile(username):
 
     user = User.query.filter_by(username=username).first_or_404()
 
-    posts = Post.query.filter_by(user_id=user.id).all()
+    posts = Post.query.filter_by(user_id=user.id)\
+        .order_by(Post.created_at.desc())\
+        .all()
 
     # show comments in profile page .. 
     comments = Comment.query.filter_by(user_id=user.id).all()
@@ -608,69 +611,6 @@ def delete_profile_image():
 
     return redirect(url_for("main.user_profile", username=current_user.username))
 
-# ======================
-# ADD AND SHOW COMMENT  
-# =======================
-
-@main.route("/comment/<int:post_id>", methods=["POST"])
-@login_required
-def add_comment(post_id):
-
-    text = request.form["comment"]
-
-    new_comment = Comment(
-        text=text,
-        user_id=current_user.id,
-        post_id=post_id
-    )
-
-    db.session.add(new_comment)
-    db.session.commit()
-
-    return redirect("/")
-
-# =====================
-# DELETE COMMENT 
-# =====================
-
-@main.route("/delete-comment/<int:id>")
-@login_required
-def delete_comment(id):
-
-    comment = Comment.query.get_or_404(id)
-
-    # Only comment owner can delete
-    if comment.author != current_user:
-        return "You cannot delete this comment"
-
-    db.session.delete(comment)
-    db.session.commit()
-
-    return redirect("/")
-
-# ==========================
-# EDIT COMMENT
-# =========================
-
-@main.route("/edit-comment/<int:id>", methods=["GET","POST"])
-@login_required
-def edit_comment(id):
-
-    comment = Comment.query.get_or_404(id)
-
-    # 🚨 IMPORTANT CHECK
-    if comment.author != current_user:
-        return "You are not allowed to edit this comment!"
-
-    if request.method == "POST":
-
-        comment.content = request.form["content"]
-
-        db.session.commit()
-
-        return redirect("/")
-
-    return render_template("edit_comment.html", comment=comment)
 
 # ===========================
 # LIKE POST 
@@ -682,13 +622,31 @@ def like_post(post_id):
 
     post = Post.query.get_or_404(post_id)
 
-    like = Like.query.filter_by(user_id=current_user.id, post_id=post_id).first()
+    like = Like.query.filter_by(
+        user_id=current_user.id,
+        post_id=post_id
+    ).first()
 
     if like:
-        db.session.delete(like)   # unlike
-    else:
-        new_like = Like(user_id=current_user.id, post_id=post_id)
-        db.session.add(new_like)
+        db.session.delete(like)
+        db.session.commit()
+        return redirect("/")
+
+    # ✅ Create like
+    new_like = Like(
+        user_id=current_user.id,
+        post_id=post_id
+    )
+    db.session.add(new_like)
+
+    # ✅ CREATE NOTIFICATION (same as API)
+    if post.user_id != current_user.id:
+        create_notification(
+            user_id=post.user_id,
+            sender_id=current_user.id,
+            type="like",
+            post_id=post_id
+        )
 
     db.session.commit()
 
@@ -723,6 +681,151 @@ def search():
         query=query
     )
     
+
+# ======================
+# ADD AND SHOW COMMENT  
+# =======================
+
+@main.route("/comment/<int:post_id>", methods=["POST"])
+@login_required
+def add_comment(post_id):
+
+    post = Post.query.get_or_404(post_id)
+    text = request.form.get("comment")
+
+    if not text:
+        flash("Comment cannot be empty")
+        return redirect(request.referrer)
+
+    target_user_id = request.form.get("target_user_id")
+
+    # 🔥 IMPORTANT FIX
+    if target_user_id:
+        target_user_id = int(target_user_id)
+    else:
+        # if no target → send to post owner
+        target_user_id = post.user_id
+
+    comment = Comment(
+        text=text,
+        user_id=current_user.id,
+        post_id=post_id,
+        target_user_id=target_user_id
+    )
+
+    db.session.add(comment)
+    db.session.commit()
+
+    # ✅ CREATE NOTIFICATION (same as API)
+    if target_user_id != current_user.id:
+        create_notification(
+            user_id=target_user_id,
+            sender_id=current_user.id,
+            type="comment",
+            post_id=post_id,
+            comment_id=comment.id
+        )
+
+    return redirect("/")
+
+
+# =====================
+# REPLY COMMENT 
+# ====================
+@main.route("/reply/<int:post_id>", methods=["POST"])
+@login_required
+def reply_comment(post_id):
+
+    text = request.form.get("text")
+    parent_id = request.form.get("parent_id")
+
+    parent = Comment.query.get_or_404(int(parent_id))
+
+    receiver_id = parent.user_id
+
+    comment = Comment(
+        text=text,
+        user_id=current_user.id,
+        post_id=post_id,
+        parent_id=parent.id,
+        target_user_id=receiver_id
+    )
+
+    db.session.add(comment)
+    db.session.commit()
+
+    # ✅ MARK OLD NOTIFICATIONS AS READ
+    Notification.query.filter_by(
+        user_id=current_user.id,
+        comment_id=parent.id,
+        is_read=False
+    ).update({"is_read": True})
+
+    # ✅ CREATE NEW NOTIFICATION
+    if receiver_id != current_user.id:
+        create_notification(
+            user_id=receiver_id,
+            sender_id=current_user.id,
+            type="reply",
+            post_id=post_id,
+            comment_id=comment.id
+        )
+
+    db.session.commit()
+
+    return redirect("/")
+
+# =====================
+# DELETE COMMENT 
+# =====================
+
+@main.route("/delete-comment/<int:id>")
+@login_required
+def delete_comment(id):
+
+    comment = Comment.query.get_or_404(id)
+
+    # Only comment owner can delete
+    if comment.author != current_user:
+        return "You cannot delete this comment"
+
+    # 🔥 DELETE RELATED NOTIFICATIONS (SAFE WAY)
+    notifications = Notification.query.filter_by(comment_id=id).all()
+
+    for n in notifications:
+        db.session.delete(n)
+
+    # delete comment
+    db.session.delete(comment)
+
+    db.session.commit()
+
+    return redirect("/")
+
+# ==========================
+# EDIT COMMENT
+# =========================
+
+@main.route("/edit-comment/<int:id>", methods=["GET","POST"])
+@login_required
+def edit_comment(id):
+
+    comment = Comment.query.get_or_404(id)
+
+    # 🚨 IMPORTANT CHECK
+    if comment.author != current_user:
+        return "You are not allowed to edit this comment!"
+
+    if request.method == "POST":
+
+        comment.content = request.form["content"]
+
+        db.session.commit()
+
+        return redirect("/")
+
+    return render_template("edit_comment.html", comment=comment)
+
     
 # =================
 # NOTIFICATION 
@@ -732,12 +835,91 @@ def search():
 def notifications():
 
     notifications = Notification.query.filter_by(
-        user_id=current_user.id
-    ).order_by(Notification.created_at.desc()).all()
-    
-    unread_count = Notification.query.filter_by(
         user_id=current_user.id,
         is_read=False
-    ).count()
+    ).order_by(Notification.created_at.desc()).all()
 
-    return render_template("notification.html", notifications=notifications,unread_count=unread_count)
+    # ✅ MARK ALL AS READ
+    Notification.query.filter_by(
+        user_id=current_user.id,
+        is_read=False
+    ).update({"is_read": True})
+
+    db.session.commit()
+
+    unread_count = 0  # now all are read
+
+    return render_template(
+        "notification.html",
+        notifications=notifications,
+        unread_count=unread_count
+    )
+    
+    
+@main.route("/read-notification/<int:id>")
+@login_required
+def read_notification(id):
+
+    notification = Notification.query.get_or_404(id)
+
+    if notification.user_id != current_user.id:
+        return "Unauthorized"
+
+    notification.is_read = True
+    db.session.commit()
+
+    # redirect to correct page
+    if notification.post_id:
+        return redirect(url_for("main.comment", post_id=notification.post_id, user_id=notification.sender_id))
+
+    return redirect("/")    
+
+
+# =================
+# comment 
+# ================    
+@main.route("/comments/<int:post_id>")
+@login_required
+def comments(post_id):
+    post = Post.query.get_or_404(post_id)
+
+    # Get unique users who commented
+    user_ids = set()
+
+    for c in post.comments:
+        if c.user_id != post.user_id:
+            user_ids.add(c.user_id)
+
+    users = User.query.filter(User.id.in_(user_ids)).all()
+
+    return render_template("comment_list.html", post=post, users=users)
+
+@main.route("/comment/<int:post_id>/<int:user_id>")
+@login_required
+def comment(post_id, user_id):
+
+    post = Post.query.get_or_404(post_id)
+
+    comments = Comment.query.filter(
+        Comment.post_id == post_id,
+        (
+            ((Comment.user_id == current_user.id) & (Comment.target_user_id == user_id)) |
+            ((Comment.user_id == user_id) & (Comment.target_user_id == current_user.id))
+        )
+    ).order_by(Comment.id).all()
+    
+    user = User.query.get_or_404(user_id)
+    
+    return render_template("comment.html", comments=comments, post=post, user_id=user_id,user=user)
+
+@main.app_context_processor
+def inject_unread_count():
+    if current_user.is_authenticated:
+        unread_count = Notification.query.filter_by(
+            user_id=current_user.id,
+            is_read=False
+        ).count()
+    else:
+        unread_count = 0
+
+    return dict(unread_count=unread_count)

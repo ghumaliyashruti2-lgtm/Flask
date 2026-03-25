@@ -1,3 +1,6 @@
+html {
+    scroll-behavior: smooth;
+}
 body{
     font-family: Arial;
     margin: 40px;
@@ -5,11 +8,94 @@ body{
 
 a{
     margin-right: 15px;
+    text-decoration: none;
+    color: black;
 }
 
 textarea{
     width:300px;
     height:100px;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid #ddd;
+    background: #fff;
+}
+
+.logo {
+    margin: 0;
+    font-size: 30px;
+    color: #222;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.topbar-right a {
+    text-decoration: none;
+    color: #222;
+    font-size: 24px;
+    position: relative;
+}
+
+.topbar-right a:hover {
+    color: #0095f6;
+}
+
+.badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: red;
+    color: white;
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+.search-bar {
+    padding: 0px 0px;
+    margin-right: auto;
+    margin-left: 30px;
+}
+
+.search-bar form {
+    display: flex;
+    gap: 10px;
+    max-width: 400px;
+}
+
+.search-bar input {
+    flex: 1;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.search-bar button {
+    padding: 8px 14px;
+    border: none;
+    background: #0095f6;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.search-bar button:hover {
+    background: #0077cc;
 }
 
 .post-card{
@@ -32,6 +118,15 @@ textarea{
     margin-top: 0px;
 }
 
+.user-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: black;
+}
+
+
 .profile-img{
     width:45px;
     height:45px;
@@ -42,30 +137,6 @@ textarea{
 .username{
     font-weight:bold;
     font-size:16px;
-}
-/*
-.post-title{
-    margin-top: 10px;
-    display:flex;
-    gap: 10px;
-}
-
-.post-title h3{
-    margin-top: 0px;
-}
-
-.post-title i{
-    cursor: pointer;
-    font-size: 18px;
-    margin-top: 3px;
-}
-*/
-
-
-.post-title{
-    display:flex;
-    gap: 30px;
-    align-items:center;
 }
 
 .menu-container{
@@ -100,6 +171,15 @@ textarea{
     background:#f2f2f2;
 }
 
+.follow-btn button{
+    padding: 4px 12px;
+    border: none;
+    background: #0095f6;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 /* show dropdown on hover */
 
 .menu-container:hover .menu-dropdown{
@@ -108,8 +188,9 @@ textarea{
 
 
 .post-content{
-    margin-top:-10px;
+    margin-top:10px;
     color:#444;
+    display:flex;
 }
 
 .post-image{
@@ -172,3 +253,227 @@ textarea{
 .menu-container:hover .menu-dropdown{
     display:block;
 }
+
+
+
+/* comment */
+
+/* MAIN */
+.chat-container {
+    max-width: 100%;
+    margin: auto;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ddd;
+}
+
+/* HEADER */
+.chat-header {
+    background: #999;
+    color: white;
+    padding: 10px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.name {
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.status {
+    font-size: 12px;
+}
+
+/* BODY */
+.chat-body {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background: #ffffff;
+}
+
+/* DATE */
+.date {
+    text-align: center;
+    background: #eee;
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    width: fit-content;
+    margin: 10px auto;
+}
+
+/* MESSAGE */
+.message {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.message.left {
+    justify-content: flex-start;
+}
+
+.message.right {
+    justify-content: flex-end;
+}
+
+/* MESSAGE BOX */
+.msg-box {
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 70%;
+    background: #f1f1f1;
+}
+
+/* USER MESSAGE (GREY) */
+.user-msg {
+    background: #dcdcdc;
+}
+
+/* FOOTER */
+.chat-footer {
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    background: white;
+}
+
+.chat-footer form {
+    display: flex;
+}
+
+.chat-footer input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    outline: none;
+}
+
+.chat-footer button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border: none;
+    background: grey;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* PROFILE PAGE */
+
+/* =========================
+   PROFILE PAGE MAIN
+========================= */
+.profile-page {
+    max-width: 100%;
+    margin: 40px auto;
+    padding: 20px;
+    background: #fff;
+    font-family: Arial, sans-serif;
+}
+
+/* =========================
+   TOP PROFILE SECTION
+========================= */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #dbdbdb;
+}
+
+/* Profile image */
+.profile-image img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+}
+
+/* Right side info */
+.profile-info {
+    flex: 1;
+}
+
+/* Username + button row */
+.profile-top {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.profile-top h2 {
+    font-size: 28px;
+    font-weight: 300;
+    margin-left: 0;
+    color: #262626;
+}
+
+/* Follow / Edit button */
+.profile-btn {
+    padding: 8px 18px;
+    border: 1px solid #dbdbdb;
+    background: #0095f6;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.profile-btn:hover {
+    background: #1877f2;
+}
+
+/* Stats */
+.profile-stats {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+
+.profile-stats div {
+    font-size: 16px;
+    color: #262626;
+}
+
+.profile-stats strong {
+    font-weight: 600;
+}
+
+
+.section-title{
+    margin-left: 45%;
+    margin-top: 20px;
+    font-weight: 700;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 20px;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.post-item {
+    width: 100%;
+}
+
+.profile-post-image {
+    width: 95%;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+}
+

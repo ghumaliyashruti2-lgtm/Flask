@@ -6,32 +6,54 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 <body>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mini Blog</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
 
-<h1>Mini Blog</h1>
+<div class="topbar">
+    <div class="topbar-left">
+        <h1 class="logo">Mini Blog</h1>
+    </div>
 
-<a href="/" style="text-decoration : none; ">Home</a>
-<a href="/add" style="text-decoration : none; ">Add Post</a>
-<a href="{{ url_for('main.user_profile', username=current_user.username) }}" style="text-decoration : none; ">
-Profile
-</a>
-<a href="{{ url_for('main.notifications') }}" style="text-decoration : none;">
-    Notifications({{unread_count}})
-</a>
+    <div class="search-bar">
+        <form action="{{ url_for('main.search') }}" method="GET">
+            <input type="text" name="query" placeholder="Search post...">
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
-{% if current_user.is_authenticated %}
-    <a class="nav-link" href="{{ url_for('main.logout') }}" style="text-decoration : none; ">Logout</a>
-{% else %}
-    <a class="nav-link" href="{{ url_for('main.login') }}"  style="text-decoration : none; ">Login</a>
-{% endif %}
+    <div class="topbar-right">
+        <a href="/" title="Home"><i class="fa fa-home"></i></a>
+        <a href="/add" title="Add Post"><i class="fa fa-plus-square"></i></a>
+        <a href="{{ url_for('main.notifications') }}" title="Notifications">
+            <i class="fa fa-bell"></i>
+            {% if unread_count > 0 %}
+                <span class="badge">{{ unread_count }}</span>
+            {% endif %}
+        </a>
+        <a href="{{ url_for('main.user_profile', username=current_user.username) }}" title="Profile">
+            <i class="fa fa-user"></i>
+        </a>
+
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.logout') }}" title="Logout">
+                <i class="fa fa-sign-out"></i>
+            </a>
+        {% else %}
+            <a href="{{ url_for('main.login') }}" title="Login">
+                <i class="fa fa-sign-in"></i>
+            </a>
+        {% endif %}
+    </div>
+</div>
 
 
-<form action="{{ url_for('main.search') }}" method="GET">
 
-    <input type="text" name="query" placeholder="Search post...">
-
-    <button type="submit">Search</button>
-
-</form>
 <hr>
 
 {% block content %}{% endblock %}

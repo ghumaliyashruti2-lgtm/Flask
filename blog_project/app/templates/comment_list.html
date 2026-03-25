@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 style="margin-left:10px;"> 💭 Comments </h2> 
+
+{% for user in users %}
+
+<div style="border:1px solid #ccc; padding:10px; margin:10px; border-radius:10px;">
+    <a href="{{ url_for('main.comment', post_id=post.id, user_id=user.id) }}"> 
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:-15px;">
+            <img src="{{ url_for('static', filename='images/profile_picture/' + user.profile_pic) }}" width="30" height="30"
+            style="border-radius:50%; object-fit:cover;">
+            {{ user.username }}
+        </div>
+    </a>
+</div>
+
+{% else %}
+    <p>No Comments</p>
+{% endfor %}
+
+{% endblock %}

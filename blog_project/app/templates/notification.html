@@ -1,84 +1,101 @@
-<h2>🔔 Notifications ({{ unread_count }})</h2>
+{% extends "base.html" %}
 
-{% for n in notifications %}
+{% block content %}
+    <h2><i class="fa fa-bell"> Notifications ({{ unread_count }})</i></h2>
 
-<div style="border:1px solid #ccc; padding:10px; margin:10px; border-radius:10px;">
+    {% for n in notifications %}
+
+    <div style="border:1px solid #ccc; padding:10px; margin:10px; border-radius:10px;">
 
 
-    <!-- ❤️ LIKE -->
-    {% if n.type == "like" %}
+        <!-- ❤️ LIKE -->
+        {% if n.type == "like" %}
 
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:-15px;">
-            <img 
-                src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
-                width="30" height="30"
-                style="border-radius:50%; object-fit:cover;"
-            >
-            {{ n.sender.username }} liked your post 
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:-15px;">
+                <img 
+                    src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
+                    width="30" height="30"
+                    style="border-radius:50%; object-fit:cover;"
+                >
+                {{ n.sender.username }} liked your post 
+                {% if n.post and n.post.image %}
+                    <a href="{{ url_for('main.like_post', post_id=n.post_id) }}">
+                        <img 
+                            src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
+                            width="40" height="40"
+                            style="margin-top:8px;margin-left:20px;"
+                        >
+                    </a>
+                {% endif %}
+            </div>
+            
+        
+        <!-- 💬 COMMENT -->
+        
+        {% elif n.type == "comment" %}
+
             {% if n.post and n.post.image %}
-                <a href="{{ url_for('main.like_post', post_id=n.post_id) }}">
-                    <img 
-                        src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
-                        width="40" height="40"
-                        style="margin-top:8px;margin-left:20px;"
-                    >
+                <a href="{{ url_for('main.read_notification', id=n.id) }}" style="text-decoration:none; color:black;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img 
+                            src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
+                            width="30" height="30"
+                            style="border-radius:50%; object-fit:cover;"
+                        >
+                        <div>{{ n.sender.username }}</div>
+                    </div>
+                    <div style="font-size:14px; margin-left:40px; margin-bottom:-20px;">
+                        {% if n.sender.id == n.post.user_id %}
+                            replied to you: "{{ n.comment.text }}"
+                        {% else %}
+                            commented: "{{ n.comment.text }}"
+                        {% endif %}
+                        <img 
+                            src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
+                            width="40" height="40"
+                            style="position:absolute; margin-top:-10px; margin-left:20px;"
+                        >
+                    </div>
                 </a>
             {% endif %}
+            
+
+
+        <!-- 🔁 REPLY 
+        {% elif n.type == "reply" %}
+
+            {% if n.post and n.post.image %}
+                <a href="{{ url_for('main.comment', post_id=n.post_id, user_id=n.sender.id) }}" style="text-decoration:none; color:black;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <img 
+                            src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
+                            width="30" height="30"
+                            style="border-radius:50%; object-fit:cover;"
+                        >
+                        <div>{{ n.sender.username }}</div>
+                    </div>
+                    <div style="font-size:14px; margin-left:40px;">
+                        replied to you: "{{ n.comment.text }}"
+                        <img 
+                            src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
+                            width="40" height="40"
+                            style="position:absolute; margin-top:-10px; margin-left:20px;"
+                        >
+                    </div>
+                </a>
+            {% endif %}-->
+
+        {% endif %}
+
+        <!-- ⏰ TIME -->
+        <div style="margin-top:5px; color:grey; font-size:12px; margin-left:40px;">
+            <b>{{ n.created_at | time_ago }}</b>
         </div>
-        
 
-    <!-- 💬 COMMENT -->
-    {% elif n.type == "comment" %}
-
-        {% if n.post and n.post.image %}
-            <a href="{{ url_for('main.like_post', post_id=n.post_id) }}" style="text-decoration:none; color:black;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <img 
-                        src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
-                        width="30" height="30"
-                        style="border-radius:50%; object-fit:cover;"
-                    >
-                    <div>{{ n.sender.username }} </div>
-                </div>
-                <div style="font-size:14px; margin-left:40px;">
-                    Comment You: "{{ n.comment.text }}"
-                    <img 
-                        src="{{ url_for('static', filename='images/post_images/' + n.post.image) }}"
-                        width="40" height="40" style="position:absolute;margin-top:-10px; margin-left:20px;" >
-                </div>
-            </a>
-        {% endif %}
-        
-
-
-    <!-- 🔁 REPLY -->
-    {% elif n.type == "reply" %}
-
-        {% if n.post and n.post.image %}
-            <a href="{{ url_for('main.like_post', post_id=n.post_id) }}" style="text-decoration:none; color:black;">
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <img 
-                        src="{{ url_for('static', filename='images/profile_picture/' + n.sender.profile_pic) }}" 
-                        width="30" height="30"
-                        style="border-radius:50%; object-fit:cover;"
-                    >
-                    <div>{{ n.sender.username }} </div>
-                </div>
-                <div style="font-size:14px; margin-left:40px;">
-                    Reply You: "{{ n.comment.text }}"
-                </div>
-            </a>
-        {% endif %}
-
-    {% endif %}
-
-    <!-- ⏰ TIME -->
-    <div style="margin-top:5px; color:grey; font-size:12px; margin-left:40px;">
-        <b>{{ n.created_at | time_ago }}</b>
     </div>
 
-</div>
+    {% else %}
+        <p>No notifications</p>
+    {% endfor %}
 
-{% else %}
-    <p>No notifications</p>
-{% endfor %}
+{% endblock %}
